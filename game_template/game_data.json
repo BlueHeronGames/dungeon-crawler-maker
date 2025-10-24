@@ -1,0 +1,43 @@
+{
+	"version": "1.0.0",
+	"metadata": {
+		"title": "Blademaster",
+		"author": "Blue Heron",
+		"version": "1.0.0",
+		"description": "You upset the Demon King, and he sent his cronies to wipe out your villagers. Journey thorough ruined villages, haunted forests, thundering plains, and finally the Demon King's castle to slay him and vindicate your dead villagers."
+	},
+	"config": {
+		"zoom": 2
+	},
+	"tilesets": [
+		{
+			"id": "dungeon_basic",
+			"path": "assets/tiles/dungeon.png",
+			"tile_size": 32
+		}
+	],
+	"rooms": [
+		{
+			"type": "rectangle",
+		"number": 5
+		}
+	],
+	"monsters": {
+		"goblin": {
+			"sprite": "assets/monsters/goblin.png",
+			"hp": 20,
+			"attack": 5,
+			"defense": 2,
+			"ai_type": "passive",
+			"loot_table": [
+				{ "name": "goblin meat", "Probability": 0.25 }
+			]
+		}
+	},
+	"items": {
+		"goblin meat": {
+			"type": "consumable",
+			"restore_health": 50
+		}
+	}
+}

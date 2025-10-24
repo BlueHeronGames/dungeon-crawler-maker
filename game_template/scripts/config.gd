@@ -1,11 +1,11 @@
 extends Node
 
-## Stores and provides access to dungeon_crawler.json settings.
+## Stores and provides access to game_data.json settings.
 class_name GameConfig
 
 var data: Dictionary = {}
 
-static func load_from_file(path: String = "res://dungeon_crawler.json") -> GameConfig:
+static func load_from_file(path: String = "res://game_data.json") -> GameConfig:
 	var instance := GameConfig.new()
 	instance._load(path)
 	return instance
