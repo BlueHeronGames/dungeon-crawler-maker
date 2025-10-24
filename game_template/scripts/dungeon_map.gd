@@ -16,6 +16,7 @@ var _rng := RandomNumberGenerator.new()
 var _tile_size := 32
 var _atlas_source_id := -1
 var _tile_coords_by_type: Dictionary = {}
+var _physics_layer_id := -1
 
 @onready var _player: Node2D = get_node_or_null(player_path)
 
@@ -56,6 +57,11 @@ func _configure_tileset(tileset_info: Dictionary) -> void:
 
 	var new_tileset := TileSet.new()
 	new_tileset.tile_size = Vector2i(_tile_size, _tile_size)
+	new_tileset.add_physics_layer()
+	_physics_layer_id = new_tileset.get_physics_layers_count() - 1
+	if _physics_layer_id >= 0:
+		new_tileset.set_physics_layer_collision_layer(_physics_layer_id, 1)
+		new_tileset.set_physics_layer_collision_mask(_physics_layer_id, 1)
 	_atlas_source_id = new_tileset.add_source(atlas)
 	tile_set = new_tileset
 	_tile_coords_by_type.clear()
@@ -66,6 +72,7 @@ func _configure_tileset(tileset_info: Dictionary) -> void:
 	else:
 		atlas.create_tile(Vector2i.ZERO)
 		_tile_coords_by_type["floor"] = Vector2i.ZERO
+		_set_tile_collision(atlas, Vector2i.ZERO, "floor")
 
 func _register_tile_definitions(tile_definitions: Array, atlas: TileSetAtlasSource, texture: Texture2D) -> void:
 	var tex_size := texture.get_size()
@@ -84,15 +91,40 @@ func _register_tile_definitions(tile_definitions: Array, atlas: TileSetAtlasSour
 			atlas.create_tile(coords)
 
 		_tile_coords_by_type[type_name] = coords
+		_set_tile_collision(atlas, coords, type_name)
 
 	if not _tile_coords_by_type.has("floor"):
 		var fallback := Vector2i.ZERO
 		if not atlas.has_tile(fallback):
 			atlas.create_tile(fallback)
 		_tile_coords_by_type["floor"] = fallback
+		_set_tile_collision(atlas, fallback, "floor")
 
 func _atlas_coords_from_index(index: int, columns: int) -> Vector2i:
 	return Vector2i(index % columns, index / columns)
+
+func _set_tile_collision(atlas: TileSetAtlasSource, coords: Vector2i, type_name: String) -> void:
+	var tile_data := atlas.get_tile_data(coords, 0)
+	if tile_data == null:
+		tile_data = TileData.new()
+		atlas.set_tile_data(coords, 0, tile_data)
+
+	if _physics_layer_id < 0:
+		return
+
+	if type_name == "wall":
+		tile_data.set_collision_polygons_count(_physics_layer_id, 1)
+		var polygon := PackedVector2Array([
+			Vector2(0, 0),
+			Vector2(_tile_size, 0),
+			Vector2(_tile_size, _tile_size),
+			Vector2(0, _tile_size)
+		])
+		tile_data.set_collision_polygon_points(_physics_layer_id, 0, polygon)
+		tile_data.set_collision_polygon_one_way(_physics_layer_id, 0, false)
+		tile_data.set_collision_polygon_one_way_margin(_physics_layer_id, 0, 0.0)
+	else:
+		tile_data.set_collision_polygons_count(_physics_layer_id, 0)
 
 func _generate_layout(room_requests: Array) -> Dictionary:
 	var map_width := DEFAULT_MAP_WIDTH

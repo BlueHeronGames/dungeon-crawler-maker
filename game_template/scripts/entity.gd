@@ -23,6 +23,10 @@ func move_to_position(target_position: Vector2) -> void:
 	_move_tween.finished.connect(_on_move_finished)
 
 func move_by_offset(offset: Vector2) -> void:
+	if offset == Vector2.ZERO:
+		return
+	if test_move(global_transform, offset):
+		return
 	move_to_position(global_position + offset)
 
 func _on_move_finished() -> void:
