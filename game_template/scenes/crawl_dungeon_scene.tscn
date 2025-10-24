@@ -1,8 +1,16 @@
-[gd_scene load_steps=2 format=3 uid="uid://cvu7248l3mroa"]
+[gd_scene load_steps=3 format=3 uid="uid://cvu7248l3mroa"]
 
 [ext_resource type="PackedScene" uid="uid://cat3l2utyojd7" path="res://scenes/entities/player.tscn" id="1_yy4xq"]
+[ext_resource type="Texture2D" uid="uid://dp7sc7gkaub1p" path="res://icon.svg" id="2_w3kej"]
 
 [node name="Node2D" type="Node2D"]
 texture_filter = 1
+
+[node name="Icon" type="Sprite2D" parent="."]
+self_modulate = Color(0.3763681, 0.5840997, 0.8125778, 1)
+scale = Vector2(10, 10)
+skew = 0.43633235
+texture = ExtResource("2_w3kej")
+centered = false
 
 [node name="Player" parent="." instance=ExtResource("1_yy4xq")]

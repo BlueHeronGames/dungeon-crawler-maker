@@ -25,15 +25,21 @@ func _physics_process(_delta: float) -> void:
 	move_by_offset(direction * step_size)
 
 func _read_movement_input() -> Vector2:
-	if Input.is_action_pressed("move_up"):
-		return Vector2.UP
-	if Input.is_action_pressed("move_down"):
-		return Vector2.DOWN
-	if Input.is_action_pressed("move_left"):
-		return Vector2.LEFT
-	if Input.is_action_pressed("move_right"):
-		return Vector2.RIGHT
-	return Vector2.ZERO
+	var horizontal := Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left")
+	var vertical := Input.get_action_strength("ui_down") - Input.get_action_strength("ui_up")
+	var direction := Vector2(horizontal, vertical)
+
+	if direction == Vector2.ZERO:
+		return Vector2.ZERO
+
+	# Prevent diagonal movement to preserve grid-based stepping.
+	if abs(direction.x) > 0 and abs(direction.y) > 0:
+		if abs(direction.x) >= abs(direction.y):
+			direction.y = 0
+		else:
+			direction.x = 0
+
+	return direction.normalized()
 
 func _apply_camera_settings() -> void:
 	if camera == null:
