@@ -7,8 +7,8 @@ class_name DungeonMap
 
 const DEFAULT_MAP_WIDTH := 96
 const DEFAULT_MAP_HEIGHT := 96
-const DEFAULT_MIN_ROOM_SIZE := Vector2i(6, 6)
-const DEFAULT_MAX_ROOM_SIZE := Vector2i(12, 12)
+const DEFAULT_MIN_ROOM_SIZE := Vector2i(4, 4)
+const DEFAULT_MAX_ROOM_SIZE := Vector2i(10, 10)
 const ROOM_PLACEMENT_ATTEMPTS := 64
 
 var _config: GameConfig
@@ -55,6 +55,7 @@ func _configure_tileset(tileset_info: Dictionary) -> void:
 	atlas.texture_region_size = Vector2i(_tile_size, _tile_size)
 
 	var new_tileset := TileSet.new()
+	new_tileset.tile_size = Vector2i(_tile_size, _tile_size)
 	_atlas_source_id = new_tileset.add_source(atlas)
 	tile_set = new_tileset
 	_tile_coords_by_type.clear()
@@ -125,14 +126,8 @@ func _generate_layout(room_requests: Array) -> Dictionary:
 		if room_count <= 0:
 			continue
 
-		var min_size := Vector2i(
-			int(request.get("min_width", DEFAULT_MIN_ROOM_SIZE.x)),
-			int(request.get("min_height", DEFAULT_MIN_ROOM_SIZE.y))
-		)
-		var max_size := Vector2i(
-			int(request.get("max_width", DEFAULT_MAX_ROOM_SIZE.x)),
-			int(request.get("max_height", DEFAULT_MAX_ROOM_SIZE.y))
-		)
+		var min_size := _read_size(request, "min_width", "min_height", "min_size", DEFAULT_MIN_ROOM_SIZE)
+		var max_size := _read_size(request, "max_width", "max_height", "max_size", DEFAULT_MAX_ROOM_SIZE)
 
 		min_size.x = max(3, min_size.x)
 		min_size.y = max(3, min_size.y)
@@ -186,6 +181,16 @@ func _generate_layout(room_requests: Array) -> Dictionary:
 		"map_width": map_width,
 		"map_height": map_height
 	}
+
+func _read_size(data: Dictionary, width_key: String, height_key: String, array_key: String, default_value: Vector2i) -> Vector2i:
+	var size_array:Array = data.get(array_key, null)
+	if size_array is Array and size_array.size() >= 2:
+		return Vector2i(int(size_array[0]), int(size_array[1]))
+
+	return Vector2i(
+		int(data.get(width_key, default_value.x)),
+		int(data.get(height_key, default_value.y))
+	)
 
 func _try_place_room(map_width: int, map_height: int, min_size: Vector2i, max_size: Vector2i, existing_rooms: Array) -> Rect2i:
 	for _attempt in range(ROOM_PLACEMENT_ATTEMPTS):
