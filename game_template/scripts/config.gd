@@ -32,3 +32,15 @@ func _load(path: String) -> void:
 func get_zoom(default_value: float = 1.0) -> float:
 	var config_section:Variant = data.get("config", {})
 	return float(config_section.get("zoom", default_value))
+
+func get_primary_tileset() -> Dictionary:
+	var tilesets:Variant = data.get("tilesets", [])
+	if tilesets is Array and tilesets.size() > 0:
+		return tilesets[0]
+	return {}
+
+func get_room_requests() -> Array:
+	var rooms:Variant = data.get("rooms", [])
+	if rooms is Array:
+		return rooms
+	return []

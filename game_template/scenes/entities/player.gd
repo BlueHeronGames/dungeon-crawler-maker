@@ -51,3 +51,12 @@ func _apply_camera_settings() -> void:
 	camera.zoom = Vector2(zoom_value, zoom_value)
 	camera.limit_left = 0
 	camera.limit_top = 0
+
+func configure_camera_limits(map_size: Vector2i, tile_size: int) -> void:
+	if camera == null:
+		return
+
+	var width_pixels:int = max(0, map_size.x * tile_size)
+	var height_pixels:int = max(0, map_size.y * tile_size)
+	camera.limit_right = max(0, width_pixels - tile_size)
+	camera.limit_bottom = max(0, height_pixels - tile_size)
