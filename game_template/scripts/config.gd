@@ -58,3 +58,15 @@ func get_metadata(default_value: Dictionary = {}) -> Dictionary:
 func get_metadata_value(key: String, default_value: String = "") -> String:
 	var metadata := get_metadata()
 	return str(metadata.get(key, default_value))
+
+func get_monster_definitions() -> Array:
+	var monsters:Variant = data.get("monsters", {})
+	var result: Array = []
+	if monsters is Dictionary:
+		for id in monsters.keys():
+			var entry = monsters[id]
+			if entry is Dictionary:
+				var definition := (entry as Dictionary).duplicate(true)
+				definition["id"] = str(id)
+				result.append(definition)
+	return result

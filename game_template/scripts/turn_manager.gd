@@ -17,10 +17,15 @@ const MONSTER_COUNT := 5
 var _monsters: Array = []
 var _pending_player_direction: Vector2i = Vector2i.ZERO
 var _tile_size: int = 32
+var _config: GameConfig
+var _monster_definitions: Array = []
+var _monster_counter := 0
 
 func _ready() -> void:
 	if _dungeon_map:
 		_tile_size = _dungeon_map.get_tile_size()
+	_config = GameConfig.load_from_file()
+	_monster_definitions = _config.get_monster_definitions()
 	call_deferred("_initialize")
 
 func process_player_input(direction: Vector2i) -> void:
@@ -43,7 +48,7 @@ func _collect_existing_monsters() -> void:
 	for child in _monsters_root.get_children():
 		if child is Monster:
 			var monster := child as Monster
-			monster.configure_for_tile_size(_tile_size)
+			_configure_monster(monster)
 			_monsters.append(monster)
 
 func _spawn_test_monsters() -> void:
@@ -65,7 +70,7 @@ func _spawn_test_monsters() -> void:
 			continue
 		var instance: Monster = monster_scene.instantiate()
 		_monsters_root.add_child(instance)
-		instance.configure_for_tile_size(_tile_size)
+		_configure_monster(instance)
 		instance.global_position = _dungeon_map.cell_to_world_center(candidate_cell)
 		_monsters.append(instance)
 		occupied[candidate_cell] = true
@@ -101,11 +106,14 @@ func _execute_turn() -> void:
 		var cell := _dungeon_map.world_to_cell(entity.global_position)
 		current_cells[entity] = cell
 		reserved[cell] = true
+	var player_cell: Vector2i = Vector2i.ZERO
+	if current_cells.has(_player):
+		player_cell = current_cells[_player]
 	var moves := []
 	for entity in entities:
 		var from_cell: Vector2i = current_cells[entity]
 		reserved.erase(from_cell)
-		var target_cell := _choose_target_cell(entity, from_cell, reserved)
+		var target_cell := _choose_target_cell(entity, from_cell, reserved, player_cell)
 		reserved[target_cell] = true
 		moves.append({
 			"entity": entity,
@@ -122,8 +130,8 @@ func _execute_turn() -> void:
 		var world_target := _dungeon_map.cell_to_world_center(to_cell)
 		entity.move_to_position(world_target)
 
-func _choose_target_cell(entity: Entity, from_cell: Vector2i, reserved: Dictionary) -> Vector2i:
-	var candidates := _get_move_candidates(entity)
+func _choose_target_cell(entity: Entity, from_cell: Vector2i, reserved: Dictionary, player_cell: Vector2i) -> Vector2i:
+	var candidates := _get_move_candidates(entity, from_cell, player_cell)
 	for direction:Vector2i in candidates:
 		var candidate_cell := from_cell + direction
 		if direction == Vector2i.ZERO:
@@ -133,7 +141,7 @@ func _choose_target_cell(entity: Entity, from_cell: Vector2i, reserved: Dictiona
 		return candidate_cell
 	return from_cell
 
-func _get_move_candidates(entity: Entity) -> Array:
+func _get_move_candidates(entity: Entity, from_cell: Vector2i, player_cell: Vector2i) -> Array:
 	if entity == _player:
 		var moves := []
 		if _pending_player_direction != Vector2i.ZERO:
@@ -141,7 +149,7 @@ func _get_move_candidates(entity: Entity) -> Array:
 		moves.append(Vector2i.ZERO)
 		return moves
 	if entity is Monster:
-		return (entity as Monster).get_move_candidates()
+			return (entity as Monster).get_move_candidates(from_cell, player_cell, _dungeon_map)
 	return [Vector2i.ZERO]
 
 func _is_cell_available(cell: Vector2i, reserved: Dictionary) -> bool:
@@ -163,3 +171,18 @@ func _can_process_turn() -> bool:
 		if not entity.can_accept_movement():
 			return false
 	return true
+
+func _configure_monster(monster: Monster) -> void:
+	if monster == null:
+		return
+	monster.configure_for_tile_size(_tile_size)
+	var definition := _get_monster_definition_for_index(_monster_counter)
+	if not definition.is_empty():
+		monster.configure_from_definition(definition)
+	_monster_counter += 1
+
+func _get_monster_definition_for_index(index: int) -> Dictionary:
+	if _monster_definitions.is_empty():
+		return {}
+	var safe_index := index % _monster_definitions.size()
+	return _monster_definitions[safe_index]
