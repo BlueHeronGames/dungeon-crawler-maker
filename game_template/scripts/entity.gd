@@ -25,7 +25,8 @@ func move_to_position(target_position: Vector2) -> void:
 func move_by_offset(offset: Vector2) -> void:
 	if offset == Vector2.ZERO:
 		return
-	if test_move(global_transform, offset):
+	var collision := move_and_collide(offset, true, 0.0, false) # zero-margin probe to see if a collider blocks the step
+	if collision:
 		return
 	move_to_position(global_position + offset)
 

@@ -17,6 +17,8 @@ var _tile_size := 32
 var _atlas_source_id := -1
 var _tile_coords_by_type: Dictionary = {}
 var _physics_layer_id := -1
+var _walkable_grid: Array = []
+var _map_size: Vector2i = Vector2i(DEFAULT_MAP_WIDTH, DEFAULT_MAP_HEIGHT)
 
 @onready var _player: Node2D = get_node_or_null(player_path)
 
@@ -28,6 +30,11 @@ func _ready() -> void:
 	_configure_tileset(tileset_info)
 
 	var generation_result := _generate_layout(_config.get_room_requests())
+	_walkable_grid = generation_result.get("walkable", [])
+	_map_size = Vector2i(
+		int(generation_result.get("map_width", DEFAULT_MAP_WIDTH)),
+		int(generation_result.get("map_height", DEFAULT_MAP_HEIGHT))
+	)
 	_paint_tiles(generation_result)
 	_position_player(generation_result)
 
@@ -340,10 +347,38 @@ func _position_player(result: Dictionary) -> void:
 		return
 
 	var spawn: Vector2i = result.get("player_spawn", Vector2i.ZERO)
-	var spawn_pos := Vector2(spawn.x * _tile_size + _tile_size * 0.5, spawn.y * _tile_size + _tile_size * 0.5)
-	_player.global_position = to_global(spawn_pos)
+	_player.global_position = cell_to_world_center(spawn)
 
 	if _player.has_method("configure_camera_limits"):
-		var map_width := int(result.get("map_width", DEFAULT_MAP_WIDTH))
-		var map_height := int(result.get("map_height", DEFAULT_MAP_HEIGHT))
-		_player.configure_camera_limits(Vector2i(map_width, map_height), _tile_size)
+		_player.configure_camera_limits(_map_size, _tile_size)
+
+func is_cell_walkable(cell: Vector2i) -> bool:
+	if _walkable_grid.is_empty():
+		return false
+	if cell.x < 0 or cell.y < 0:
+		return false
+	if cell.y >= _walkable_grid.size():
+		return false
+	var row : Variant = _walkable_grid[cell.y]
+	if not (row is Array):
+		return false
+	if cell.x >= row.size():
+		return false
+	return bool(row[cell.x])
+
+func world_to_cell(world_position: Vector2) -> Vector2i:
+	var local_position := to_local(world_position)
+	return Vector2i(
+		int(floor(local_position.x / _tile_size)),
+		int(floor(local_position.y / _tile_size))
+	)
+
+func cell_to_world_center(cell: Vector2i) -> Vector2:
+	var local_position := Vector2(
+		cell.x * _tile_size + _tile_size * 0.5,
+		cell.y * _tile_size + _tile_size * 0.5
+	)
+	return to_global(local_position)
+
+func get_tile_size() -> int:
+	return _tile_size
