@@ -13,19 +13,25 @@ var _player: Player
 var _is_visible: bool = false
 
 func _ready() -> void:
+	print("InventoryUI _ready() called")
 	_ensure_ui()
 	_ensure_inventory_action()
-	set_visible(false)
+	# Start hidden, toggle with I key
+	set_to_visible(false)
+	print("InventoryUI initialized, visible = ", _is_visible)
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_inventory"):
+		print("Inventory toggle pressed!")
 		toggle_visibility()
 
 func set_player(player: Player) -> void:
 	_player = player
+	print("InventoryUI player set: ", _player)
 
 func toggle_visibility() -> void:
 	_is_visible = not _is_visible
+	print("Toggling inventory visibility to: ", _is_visible)
 	set_to_visible(_is_visible)
 	if _is_visible:
 		_update_inventory_display()
@@ -53,9 +59,12 @@ func _update_inventory_display() -> void:
 		if key_num <= 9:
 			var item_name := str(item.get("name", "Unknown"))
 			var item_data : Dictionary = item.get("data", {})
+			var quantity := int(item.get("quantity", 1))
 			var restore_health := int(item_data.get("restore_health", 0))
 			
 			text += "%d. %s" % [key_num, item_name]
+			if quantity > 1:
+				text += " x%d" % quantity
 			if restore_health > 0:
 				text += " (restores %d health)" % restore_health
 			text += "\n"
@@ -107,7 +116,9 @@ func _ensure_inventory_action() -> void:
 	const ACTION := "toggle_inventory"
 	if not InputMap.has_action(ACTION):
 		InputMap.add_action(ACTION)
+		print("Created toggle_inventory action")
 	_add_key_to_action(ACTION, KEY_I)
+	print("Bound I key to toggle_inventory action")
 
 func _add_key_to_action(action_name: String, keycode: int) -> void:
 	var events := InputMap.action_get_events(action_name)

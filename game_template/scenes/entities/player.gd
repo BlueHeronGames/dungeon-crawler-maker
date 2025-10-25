@@ -114,12 +114,22 @@ func _apply_tile_metrics(tile_size: int) -> void:
 			_sprite.scale = Vector2(scale, scale)
 
 func add_item_to_inventory(item_name: String, item_data: Dictionary) -> void:
+	# Check if item already exists in inventory (for stacking)
+	for item in inventory:
+		if item is Dictionary:
+			if str(item.get("name", "")) == item_name:
+				# Found matching item, increment quantity
+				item["quantity"] = int(item.get("quantity", 1)) + 1
+				return
+	
+	# New item, add to inventory with quantity 1
 	var entry_data := {}
 	if item_data is Dictionary:
 		entry_data = (item_data as Dictionary).duplicate(true)
 	inventory.append({
 		"name": item_name,
-		"data": entry_data
+		"data": entry_data,
+		"quantity": 1
 	})
 
 func get_inventory_items() -> Array:
@@ -153,8 +163,14 @@ func use_consumable_item(inventory_index: int) -> bool:
 			else:
 				turn_manager.show_console_message("You consume the %s but you're already at full health." % item_name)
 	
-	# Remove item from inventory after use
-	inventory.remove_at(inventory_index)
+	# Decrement quantity, remove item if quantity reaches 0
+	var quantity := int(item_entry.get("quantity", 1))
+	quantity -= 1
+	if quantity <= 0:
+		inventory.remove_at(inventory_index)
+	else:
+		item_entry["quantity"] = quantity
+	
 	return true
 
 func get_consumable_items() -> Array:
@@ -167,7 +183,8 @@ func get_consumable_items() -> Array:
 				consumables.append({
 					"index": i,
 					"name": item_entry.get("name", ""),
-					"data": item_data
+					"data": item_data,
+					"quantity": int(item_entry.get("quantity", 1))
 				})
 	return consumables
 

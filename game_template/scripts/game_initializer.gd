@@ -23,8 +23,22 @@ func _apply_window_title() -> void:
 	DisplayServer.window_set_title(window_title)
 
 func _setup_inventory_ui() -> void:
-	var player := get_node_or_null("../Player") as Player
-	var inventory_ui := get_node_or_null("../InventoryUI") as InventoryUI
+	print("Setting up inventory UI...")
+	print("Self node: ", self.name)
+	print("Self path: ", self.get_path())
+	
+	var player := get_node_or_null("Player") as Player
+	var inventory_ui := get_node_or_null("InventoryUI") as InventoryUI
+	
+	print("Player found: ", player != null, " at path: ", "Player")
+	print("InventoryUI found: ", inventory_ui != null, " at path: ", "InventoryUI")
 	
 	if player and inventory_ui:
 		inventory_ui.set_player(player)
+		print("Connected inventory UI to player")
+	else:
+		print("ERROR: Could not connect inventory UI!")
+		if not player:
+			print("  - Player node not found")
+		if not inventory_ui:
+			print("  - InventoryUI node not found")
