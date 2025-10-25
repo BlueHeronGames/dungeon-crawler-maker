@@ -16,9 +16,11 @@ class_name Player
 
 var _config: GameConfig
 var inventory: Array = [] # Each entry is a dictionary containing item data
+var _can_pass_turn: bool = false
 
 func _ready() -> void:
 	_config = GameConfig.load_from_file()
+	_can_pass_turn = _config.get_can_pass_turn()
 	_apply_tile_metrics(_config.get_tile_size(int(step_size)))
 	_apply_camera_settings()
 	_apply_player_stats()
@@ -37,6 +39,10 @@ func _physics_process(_delta: float) -> void:
 
 	if _turn_manager and Input.is_action_just_pressed("pickup"):
 		_turn_manager.request_item_pickup()
+		return
+
+	if _can_pass_turn and _turn_manager and Input.is_action_just_pressed("pass_turn"):
+		_turn_manager.request_pass_turn()
 		return
 	
 	# Check for consumable item usage (keys 1-9)
@@ -202,12 +208,21 @@ func _ensure_pickup_action() -> void:
 	# Also set up consumable usage keys
 	_ensure_consumable_actions()
 
+	if _can_pass_turn:
+		_ensure_pass_turn_action()
+
 func _ensure_consumable_actions() -> void:
 	for i in range(1, 10):  # Support using items 1-9
 		var action_name := "use_item_%d" % i
 		if not InputMap.has_action(action_name):
 			InputMap.add_action(action_name)
 		_add_key_to_action(action_name, KEY_0 + i)
+
+func _ensure_pass_turn_action() -> void:
+	const ACTION := "pass_turn"
+	if not InputMap.has_action(ACTION):
+		InputMap.add_action(ACTION)
+	_add_key_to_action(ACTION, KEY_SPACE)
 
 func _add_key_to_action(action_name: String, keycode: int) -> void:
 	var events := InputMap.action_get_events(action_name)

@@ -25,6 +25,7 @@ var _monster_definitions: Array = []
 var _monster_counter := 0
 var _loot_system: LootSystem
 var _items_on_floor: Dictionary = {} # cell -> {"name", "data", "node"}
+var _player_requested_pass := false
 
 func _ready() -> void:
 	if _dungeon_map:
@@ -41,6 +42,17 @@ func process_player_input(direction: Vector2i) -> void:
 	if not _can_process_turn():
 		return
 	_pending_player_direction = direction
+	_execute_turn()
+
+func request_pass_turn() -> void:
+	if _player == null:
+		return
+	if not _can_process_turn():
+		return
+	_player_requested_pass = true
+	_pending_player_direction = Vector2i.ZERO
+	if _console:
+		_console.show_message("You wait.")
 	_execute_turn()
 
 func _initialize() -> void:
@@ -132,28 +144,32 @@ func _execute_turn() -> void:
 				entities.erase(target_monster)
 				current_cells.erase(target_monster)
 				reserved.erase(target_cell)
-		_pending_player_direction = Vector2i.ZERO
+			_pending_player_direction = Vector2i.ZERO
 	
 	# Determine actions (movement or attacks)
+	var player_passed := _player_requested_pass
 	var actions := []
 	for entity in entities:
 		if entity is Monster and not entity.is_alive():
 			continue
-		if entity == _player and player_performed_attack:
-			actions.append({
-				"entity": _player,
-				"from": player_cell,
-				"to": player_cell,
-				"attack_player": false,
-				"target_cell": player_cell
-			})
-			continue
-		var from_cell: Vector2i = current_cells[entity]
+		var from_cell: Vector2i = current_cells.get(entity, _dungeon_map.world_to_cell(entity.global_position))
 		reserved.erase(from_cell)
-		var action := _determine_entity_action(entity, from_cell, reserved, player_cell)
+
+		var action: Dictionary
+		if entity == _player and (player_performed_attack or player_passed):
+			action = {
+				"entity": _player,
+				"from": from_cell,
+				"to": from_cell,
+				"attack_player": false,
+				"target_cell": from_cell
+			}
+		else:
+			action = _determine_entity_action(entity, from_cell, reserved, player_cell)
 		reserved[action["to"]] = true
 		actions.append(action)
 	_pending_player_direction = Vector2i.ZERO
+	_player_requested_pass = false
 
 	# Execute movements
 	var player_target_cell := player_cell

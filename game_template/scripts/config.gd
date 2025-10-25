@@ -37,6 +37,10 @@ func get_tile_size(default_value: int = 32) -> int:
 	var tileset := get_primary_tileset()
 	return int(tileset.get("tile_size", default_value))
 
+func get_can_pass_turn(default_value: bool = false) -> bool:
+	var config_section:Variant = data.get("config", {})
+	return bool(config_section.get("can_pass_turn", default_value))
+
 func get_primary_tileset() -> Dictionary:
 	var tilesets:Variant = data.get("tilesets", [])
 	if tilesets is Array and tilesets.size() > 0:
