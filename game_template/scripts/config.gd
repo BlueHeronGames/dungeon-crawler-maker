@@ -48,3 +48,13 @@ func get_room_requests() -> Array:
 	if rooms is Array:
 		return rooms
 	return []
+
+func get_metadata(default_value: Dictionary = {}) -> Dictionary:
+	var metadata:Variant = data.get("metadata", default_value)
+	if metadata is Dictionary:
+		return metadata
+	return default_value
+
+func get_metadata_value(key: String, default_value: String = "") -> String:
+	var metadata := get_metadata()
+	return str(metadata.get(key, default_value))

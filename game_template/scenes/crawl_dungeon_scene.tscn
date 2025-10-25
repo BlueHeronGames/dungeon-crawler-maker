@@ -1,12 +1,14 @@
-[gd_scene load_steps=5 format=3 uid="uid://cvu7248l3mroa"]
+[gd_scene load_steps=6 format=3 uid="uid://cvu7248l3mroa"]
 
 [ext_resource type="PackedScene" uid="uid://cat3l2utyojd7" path="res://scenes/entities/player.tscn" id="1_yy4xq"]
 [ext_resource type="Script" uid="uid://degw72oi21asx" path="res://scripts/dungeon_map.gd" id="2"]
 [ext_resource type="Script" path="res://scripts/turn_manager.gd" id="3_4b4d7"]
 [ext_resource type="PackedScene" path="res://scenes/entities/monster.tscn" id="4_lhjp7"]
+[ext_resource type="Script" path="res://scripts/game_initializer.gd" id="5_lhe4m"]
 
 [node name="Node2D" type="Node2D"]
 texture_filter = 1
+script = ExtResource("5_lhe4m")
 
 [node name="Dungeon" type="TileMap" parent="."]
 texture_filter = 1
