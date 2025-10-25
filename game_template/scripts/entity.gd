@@ -3,6 +3,8 @@ extends Node2D
 ## Base entity that handles tweened movement shared by all creatures.
 class_name Entity
 
+signal health_changed(current_hp: int, max_hp: int)
+
 const MOVE_DURATION := 0.1
 
 var _move_tween: Tween
@@ -36,10 +38,13 @@ func _on_move_finished() -> void:
 	_is_moving = false
 	_move_tween = null
 
-func take_damage(amount: int) -> void:
+func take_damage(amount: int) -> int:
 	var actual_damage : int = max(1, amount - defense)
-	current_hp -= actual_damage
-	current_hp = max(0, current_hp)
+	var previous_hp := current_hp
+	current_hp = max(0, current_hp - actual_damage)
+	if current_hp != previous_hp:
+		_emit_health_changed()
+	return actual_damage
 
 func is_alive() -> bool:
 	return current_hp > 0
@@ -52,4 +57,9 @@ func get_hp_ratio() -> float:
 func restore_health(amount: int) -> int:
 	var old_hp := current_hp
 	current_hp = min(max_hp, current_hp + amount)
+	if current_hp != old_hp:
+		_emit_health_changed()
 	return current_hp - old_hp
+
+func _emit_health_changed() -> void:
+	emit_signal("health_changed", current_hp, max_hp)

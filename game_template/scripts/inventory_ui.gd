@@ -19,24 +19,21 @@ var _player: Player
 var _is_visible: bool = false
 
 func _ready() -> void:
-	print("InventoryUI _ready() called")
 	_ensure_ui()
 	_ensure_inventory_action()
 	set_to_visible(false)
-	print("InventoryUI initialized, visible = ", _is_visible)
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_inventory"):
-		print("Inventory toggle pressed!")
 		toggle_visibility()
 
 func set_player(player: Player) -> void:
 	_player = player
-	print("InventoryUI player set: ", _player)
+	if _is_visible:
+		_update_inventory_display()
 
 func toggle_visibility() -> void:
 	_is_visible = not _is_visible
-	print("Toggling inventory visibility to: ", _is_visible)
 	set_to_visible(_is_visible)
 	if _is_visible:
 		_update_inventory_display()
@@ -182,6 +179,7 @@ func _ensure_ui() -> void:
 		overlay.color = Color(0, 0, 0, 0.6)
 		overlay.anchor_right = 1.0
 		overlay.anchor_bottom = 1.0
+		overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_container.add_child(overlay)
 		
 		# Center panel

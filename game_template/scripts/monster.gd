@@ -16,6 +16,7 @@ var _rng := RandomNumberGenerator.new()
 var _ai_type := "random"
 var _behavior: MonsterBehavior = null
 var _loot_table: Array = []
+var _definition_id := "monster"
 
 func _ready() -> void:
 	_rng.randomize()
@@ -67,9 +68,14 @@ func configure_from_definition(definition: Dictionary) -> void:
 		var loot = definition.get("loot_table", [])
 		if loot is Array:
 			_loot_table = loot.duplicate(true)
+	if definition.has("id"):
+		_definition_id = str(definition.get("id", "monster"))
 
 func get_loot_table() -> Array:
 	return _loot_table
+
+func get_display_name() -> String:
+	return _definition_id.replace("_", " ").capitalize()
 
 func set_ai_type(ai_type: String) -> void:
 	_ai_type = ai_type.to_lower()

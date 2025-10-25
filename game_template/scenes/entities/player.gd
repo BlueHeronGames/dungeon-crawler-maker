@@ -29,6 +29,7 @@ func _apply_player_stats() -> void:
 	current_hp = max_hp
 	attack = 15
 	defense = 5
+	_emit_health_changed()
 
 func _physics_process(_delta: float) -> void:
 	if not can_accept_movement():
@@ -121,6 +122,7 @@ func add_item_to_inventory(item_name: String, item_data: Dictionary) -> void:
 			if str(item.get("name", "")) == item_name:
 				# Found matching item, increment quantity
 				item["quantity"] = int(item.get("quantity", 1)) + 1
+				_refresh_inventory_ui()
 				return
 	
 	# New item, add to inventory with quantity 1
@@ -132,6 +134,7 @@ func add_item_to_inventory(item_name: String, item_data: Dictionary) -> void:
 		"data": entry_data,
 		"quantity": 1
 	})
+	_refresh_inventory_ui()
 
 func get_inventory_items() -> Array:
 	return inventory.duplicate(true)

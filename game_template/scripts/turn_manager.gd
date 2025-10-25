@@ -129,31 +129,29 @@ func _execute_turn() -> void:
 			_pending_player_direction = Vector2i.ZERO
 			return
 	
-	# Normal movement turn
-	var moves := []
+	# Determine actions (movement or attacks)
+	var actions := []
 	for entity in entities:
 		var from_cell: Vector2i = current_cells[entity]
 		reserved.erase(from_cell)
-		var target_cell := _choose_target_cell(entity, from_cell, reserved, player_cell)
-		reserved[target_cell] = true
-		moves.append({
-			"entity": entity,
-			"from": from_cell,
-			"to": target_cell
-		})
+		var action := _determine_entity_action(entity, from_cell, reserved, player_cell)
+		reserved[action["to"]] = true
+		actions.append(action)
 	_pending_player_direction = Vector2i.ZERO
-	
-	# Execute moves
+
+	# Execute movements
 	var player_target_cell := player_cell
 	var player_moved := false
-	for move in moves:
-		var to_cell: Vector2i = move["to"]
-		var from_cell: Vector2i = move["from"]
+	for action in actions:
+		if action.get("attack_player", false):
+			continue
+		var to_cell: Vector2i = action["to"]
+		var from_cell: Vector2i = action["from"]
+		var entity: Entity = action["entity"]
 		if to_cell == from_cell:
-			if move["entity"] == _player:
+			if entity == _player:
 				player_target_cell = to_cell
 			continue
-		var entity: Entity = move["entity"]
 		var world_target := _dungeon_map.cell_to_world_center(to_cell)
 		entity.move_to_position(world_target)
 		if entity == _player:
@@ -162,16 +160,14 @@ func _execute_turn() -> void:
 
 	_handle_player_cell_entry(player_target_cell, player_moved)
 
-func _choose_target_cell(entity: Entity, from_cell: Vector2i, reserved: Dictionary, player_cell: Vector2i) -> Vector2i:
-	var candidates := _get_move_candidates(entity, from_cell, player_cell)
-	for direction:Vector2i in candidates:
-		var candidate_cell := from_cell + direction
-		if direction == Vector2i.ZERO:
-			candidate_cell = from_cell
-		if not _is_cell_available(candidate_cell, reserved):
+	# Resolve monster attacks after movement
+	for action in actions:
+		if not action.get("attack_player", false):
 			continue
-		return candidate_cell
-	return from_cell
+		var monster := action["entity"] as Monster
+		var target_cell: Vector2i = action.get("target_cell", player_target_cell)
+		if monster and player_target_cell == target_cell:
+			_process_monster_attack(monster)
 
 func _get_move_candidates(entity: Entity, from_cell: Vector2i, player_cell: Vector2i) -> Array:
 	if entity == _player:
@@ -189,6 +185,31 @@ func _is_cell_available(cell: Vector2i, reserved: Dictionary) -> bool:
 		return false
 	return _dungeon_map.is_cell_walkable(cell)
 
+func _determine_entity_action(entity: Entity, from_cell: Vector2i, reserved: Dictionary, player_cell: Vector2i) -> Dictionary:
+	var action := {
+		"entity": entity,
+		"from": from_cell,
+		"to": from_cell,
+		"attack_player": false,
+		"target_cell": from_cell
+	}
+
+	var candidates := _get_move_candidates(entity, from_cell, player_cell)
+	for direction: Vector2i in candidates:
+		var candidate_cell := from_cell + direction
+		if direction == Vector2i.ZERO:
+			candidate_cell = from_cell
+		if entity != _player and candidate_cell == player_cell:
+			action["attack_player"] = true
+			action["target_cell"] = player_cell
+			return action
+		if _is_cell_available(candidate_cell, reserved):
+			action["to"] = candidate_cell
+			action["target_cell"] = candidate_cell
+			return action
+
+	return action
+
 func _all_entities() -> Array:
 	var entities: Array = []
 	if _player:
@@ -202,6 +223,8 @@ func _can_process_turn() -> bool:
 	for entity in _all_entities():
 		if not entity.can_accept_movement():
 			return false
+	if _player and not _player.is_alive():
+		return false
 	return true
 
 func _configure_monster(monster: Monster) -> void:
@@ -299,6 +322,25 @@ func _handle_player_cell_entry(cell: Vector2i, player_moved: bool) -> void:
 		_notify_item_seen(item_name)
 	elif _console:
 		_console.clear_message()
+
+func _process_monster_attack(monster: Monster) -> void:
+	if _player == null or monster == null or not monster.is_alive():
+		return
+
+	var damage := _player.take_damage(monster.attack)
+	if damage <= 0:
+		damage = 0
+
+	if _console:
+		var monster_name := monster.get_display_name()
+		_console.show_message("The %s hits you for %d damage!" % [monster_name, damage])
+
+	if not _player.is_alive():
+		_handle_player_defeat()
+
+func _handle_player_defeat() -> void:
+	if _console:
+		_console.show_message("You have been defeated!")
 
 func request_item_pickup() -> void:
 	if _player == null or _dungeon_map == null:

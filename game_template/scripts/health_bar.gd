@@ -34,6 +34,9 @@ func attach_to_entity(entity: Entity) -> void:
 	_entity = entity
 	if _entity:
 		_entity.tree_exiting.connect(_on_entity_removed)
+		if not _entity.health_changed.is_connected(_on_entity_health_changed):
+			_entity.health_changed.connect(_on_entity_health_changed)
+		update_display()
 	queue_redraw()
 
 func update_display() -> void:
@@ -49,3 +52,6 @@ func update_display() -> void:
 func _on_entity_removed() -> void:
 	_entity = null
 	visible = false
+
+func _on_entity_health_changed(_current: int, _max: int) -> void:
+	update_display()
