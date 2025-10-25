@@ -14,6 +14,8 @@ var _is_visible_override: bool = false
 func _ready() -> void:
 	custom_minimum_size = Vector2(bar_width, bar_height)
 	visible = false
+	z_index = 100  # Ensure health bars render above other monsters
+	z_as_relative = false  # Use absolute z-index, not relative to parent
 
 func _draw() -> void:
 	if _entity == null:
