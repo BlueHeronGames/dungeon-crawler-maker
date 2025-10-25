@@ -46,6 +46,11 @@ func set_to_visible(visible: bool) -> void:
 	_ensure_ui()
 	_container.visible = visible
 
+func refresh_display() -> void:
+	# Refresh the inventory display without changing visibility
+	if _is_visible:
+		_update_inventory_display()
+
 func _update_inventory_display() -> void:
 	_ensure_ui()
 	if not _player:

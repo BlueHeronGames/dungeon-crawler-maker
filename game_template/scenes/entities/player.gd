@@ -46,6 +46,7 @@ func _physics_process(_delta: float) -> void:
 			var consumable_data : Dictionary = consumables[i - 1]
 			var inventory_index := int(consumable_data.get("index", -1))
 			if use_consumable_item(inventory_index):
+				_refresh_inventory_ui()
 				return # Consuming an item ends the turn
 
 	var direction := _read_movement_input()
@@ -214,3 +215,9 @@ func _add_key_to_action(action_name: String, keycode: int) -> void:
 	input_event.physical_keycode = keycode
 	input_event.keycode = keycode
 	InputMap.action_add_event(action_name, input_event)
+
+func _refresh_inventory_ui() -> void:
+	# Find and refresh the inventory UI if it exists
+	var inventory_ui := get_tree().root.find_child("InventoryUI", true, false) as InventoryUI
+	if inventory_ui and inventory_ui.has_method("refresh_display"):
+		inventory_ui.refresh_display()
