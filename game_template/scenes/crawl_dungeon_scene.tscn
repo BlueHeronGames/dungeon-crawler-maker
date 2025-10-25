@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://cvu7248l3mroa"]
+[gd_scene load_steps=5 format=3 uid="uid://cvu7248l3mroa"]
 
 [ext_resource type="PackedScene" uid="uid://cat3l2utyojd7" path="res://scenes/entities/player.tscn" id="1_yy4xq"]
 [ext_resource type="Script" uid="uid://degw72oi21asx" path="res://scripts/dungeon_map.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/turn_manager.gd" id="3_4b4d7"]
+[ext_resource type="PackedScene" path="res://scenes/entities/monster.tscn" id="4_lhjp7"]
 
 [node name="Node2D" type="Node2D"]
 texture_filter = 1
@@ -13,3 +15,13 @@ script = ExtResource("2")
 player_path = NodePath("../Player")
 
 [node name="Player" parent="." instance=ExtResource("1_yy4xq")]
+turn_manager_path = NodePath("../TurnManager")
+
+[node name="Monsters" type="Node" parent="."]
+
+[node name="TurnManager" type="Node" parent="."]
+script = ExtResource("3_4b4d7")
+dungeon_map_path = NodePath("../Dungeon")
+player_path = NodePath("../Player")
+monsters_container_path = NodePath("../Monsters")
+monster_scene = ExtResource("4_lhjp7")

@@ -7,12 +7,12 @@ class_name Player
 @export var camera_path: NodePath = NodePath("Camera2D")
 @export var collision_shape_path: NodePath = NodePath("CollisionShape2D")
 @export var sprite_path: NodePath = NodePath("Sprite2D")
-@export var dungeon_map_path: NodePath = NodePath("../Dungeon")
+@export var turn_manager_path: NodePath = NodePath("../TurnManager")
 
 @onready var camera: Camera2D = get_node_or_null(camera_path)
 @onready var _collision_shape: CollisionShape2D = get_node_or_null(collision_shape_path)
 @onready var _sprite: Sprite2D = get_node_or_null(sprite_path)
-@onready var _dungeon_map: DungeonMap = get_node_or_null(dungeon_map_path)
+@onready var _turn_manager: TurnManager = get_node_or_null(turn_manager_path)
 
 var _config: GameConfig
 
@@ -29,7 +29,11 @@ func _physics_process(_delta: float) -> void:
 	if direction == Vector2.ZERO:
 		return
 
-	_attempt_grid_move(direction)
+	var step_direction := Vector2i(int(sign(direction.x)), int(sign(direction.y)))
+	if step_direction == Vector2i.ZERO:
+		return
+	if _turn_manager:
+		_turn_manager.process_player_input(step_direction)
 
 func _read_movement_input() -> Vector2:
 	var horizontal := Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left")
@@ -85,19 +89,3 @@ func _apply_tile_metrics(tile_size: int) -> void:
 		if base_size.x != 0 and base_size.y != 0:
 			var scale := tile_size / base_size.x
 			_sprite.scale = Vector2(scale, scale)
-
-func _attempt_grid_move(direction: Vector2) -> void:
-	var step_direction := Vector2i(int(sign(direction.x)), int(sign(direction.y)))
-	if step_direction == Vector2i.ZERO:
-		return
-	if _dungeon_map == null:
-		move_by_offset(direction * step_size)
-		return
-
-	var current_cell := _dungeon_map.world_to_cell(global_position)
-	var target_cell := current_cell + step_direction
-	if not _dungeon_map.is_cell_walkable(target_cell):
-		return
-
-	var target_position := _dungeon_map.cell_to_world_center(target_cell)
-	move_to_position(target_position)

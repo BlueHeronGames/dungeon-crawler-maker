@@ -73,7 +73,6 @@ func _configure_tileset(tileset_info: Dictionary) -> void:
 	else:
 		atlas.create_tile(Vector2i.ZERO)
 		_tile_coords_by_type["floor"] = Vector2i.ZERO
-		_set_tile_collision(atlas, Vector2i.ZERO, "floor")
 
 func _register_tile_definitions(tile_definitions: Array, atlas: TileSetAtlasSource, texture: Texture2D) -> void:
 	var tex_size := texture.get_size()

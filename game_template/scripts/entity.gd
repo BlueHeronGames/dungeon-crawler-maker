@@ -1,4 +1,4 @@
-extends CharacterBody2D
+extends Node2D
 
 ## Base entity that handles tweened movement shared by all creatures.
 class_name Entity
