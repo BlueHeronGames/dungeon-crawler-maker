@@ -1,10 +1,13 @@
-[gd_scene load_steps=6 format=3 uid="uid://cvu7248l3mroa"]
+[gd_scene load_steps=9 format=3 uid="uid://cvu7248l3mroa"]
 
 [ext_resource type="PackedScene" uid="uid://cat3l2utyojd7" path="res://scenes/entities/player.tscn" id="1_yy4xq"]
 [ext_resource type="Script" uid="uid://degw72oi21asx" path="res://scripts/dungeon_map.gd" id="2"]
 [ext_resource type="Script" path="res://scripts/turn_manager.gd" id="3_4b4d7"]
 [ext_resource type="PackedScene" path="res://scenes/entities/monster.tscn" id="4_lhjp7"]
 [ext_resource type="Script" path="res://scripts/game_initializer.gd" id="5_lhe4m"]
+[ext_resource type="PackedScene" uid="uid://b3x4y8k9m2n7p" path="res://scenes/item_drop.tscn" id="6_itemdr"]
+[ext_resource type="Script" path="res://scripts/message_console.gd" id="7_console"]
+[ext_resource type="PackedScene" uid="uid://cipjxckv47vdo" path="res://scenes/inventory_ui.tscn" id="8_inventory"]
 
 [node name="Node2D" type="Node2D"]
 texture_filter = 1
@@ -27,3 +30,9 @@ dungeon_map_path = NodePath("../Dungeon")
 player_path = NodePath("../Player")
 monsters_container_path = NodePath("../Monsters")
 monster_scene = ExtResource("4_lhjp7")
+item_drop_scene = ExtResource("6_itemdr")
+
+[node name="Console" type="CanvasLayer" parent="."]
+script = ExtResource("7_console")
+
+[node name="InventoryUI" parent="." instance=ExtResource("8_inventory")]

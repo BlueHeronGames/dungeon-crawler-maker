@@ -8,6 +8,11 @@ const MOVE_DURATION := 0.1
 var _move_tween: Tween
 var _is_moving := false
 
+var max_hp: int = 100
+var current_hp: int = 100
+var attack: int = 10
+var defense: int = 0
+
 func can_accept_movement() -> bool:
 	return not _is_moving
 
@@ -30,3 +35,21 @@ func move_by_offset(offset: Vector2) -> void:
 func _on_move_finished() -> void:
 	_is_moving = false
 	_move_tween = null
+
+func take_damage(amount: int) -> void:
+	var actual_damage : int = max(1, amount - defense)
+	current_hp -= actual_damage
+	current_hp = max(0, current_hp)
+
+func is_alive() -> bool:
+	return current_hp > 0
+
+func get_hp_ratio() -> float:
+	if max_hp <= 0:
+		return 0.0
+	return float(current_hp) / float(max_hp)
+
+func restore_health(amount: int) -> int:
+	var old_hp := current_hp
+	current_hp = min(max_hp, current_hp + amount)
+	return current_hp - old_hp

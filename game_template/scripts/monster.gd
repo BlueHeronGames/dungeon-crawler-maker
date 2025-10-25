@@ -6,17 +6,22 @@ class_name Monster
 @export var step_size: float = 32.0
 @export var collision_shape_path: NodePath = NodePath("CollisionShape2D")
 @export var sprite_path: NodePath = NodePath("Sprite2D")
+@export var health_bar_path: NodePath = NodePath("HealthBar")
 
 @onready var _collision_shape: CollisionShape2D = get_node_or_null(collision_shape_path)
 @onready var _sprite: Sprite2D = get_node_or_null(sprite_path)
+@onready var _health_bar: HealthBar = get_node_or_null(health_bar_path)
 
 var _rng := RandomNumberGenerator.new()
 var _ai_type := "random"
 var _behavior: MonsterBehavior = null
+var _loot_table: Array = []
 
 func _ready() -> void:
 	_rng.randomize()
 	_apply_ai_behavior()
+	if _health_bar:
+		_health_bar.attach_to_entity(self)
 
 func configure_for_tile_size(tile_size: int) -> void:
 	step_size = float(tile_size)
@@ -51,6 +56,20 @@ func shuffle_directions(items: Array) -> void:
 func configure_from_definition(definition: Dictionary) -> void:
 	if definition.has("ai_type"):
 		set_ai_type(str(definition.get("ai_type", "random")))
+	if definition.has("hp"):
+		max_hp = int(definition.get("hp", 100))
+		current_hp = max_hp
+	if definition.has("attack"):
+		attack = int(definition.get("attack", 10))
+	if definition.has("defense"):
+		defense = int(definition.get("defense", 0))
+	if definition.has("loot_table"):
+		var loot = definition.get("loot_table", [])
+		if loot is Array:
+			_loot_table = loot.duplicate(true)
+
+func get_loot_table() -> Array:
+	return _loot_table
 
 func set_ai_type(ai_type: String) -> void:
 	_ai_type = ai_type.to_lower()
@@ -58,6 +77,10 @@ func set_ai_type(ai_type: String) -> void:
 
 func get_ai_type() -> String:
 	return _ai_type
+
+func update_health_bar() -> void:
+	if _health_bar:
+		_health_bar.update_display()
 
 func _apply_ai_behavior() -> void:
 	match _ai_type:

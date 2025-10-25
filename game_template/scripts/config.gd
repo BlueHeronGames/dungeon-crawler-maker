@@ -59,6 +59,12 @@ func get_metadata_value(key: String, default_value: String = "") -> String:
 	var metadata := get_metadata()
 	return str(metadata.get(key, default_value))
 
+func get_item_definitions() -> Dictionary:
+	var items:Variant = data.get("items", {})
+	if items is Dictionary:
+		return items
+	return {}
+
 func get_monster_definitions() -> Array:
 	var monsters:Variant = data.get("monsters", {})
 	var result: Array = []
