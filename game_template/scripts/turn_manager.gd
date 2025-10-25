@@ -121,17 +121,33 @@ func _execute_turn() -> void:
 		player_cell = current_cells[_player]
 	
 	# Check if player is attacking a monster
+	var player_performed_attack := false
 	if _pending_player_direction != Vector2i.ZERO:
 		var target_cell := player_cell + _pending_player_direction
 		var target_monster := _get_monster_at_cell(target_cell, current_cells)
 		if target_monster:
 			_process_player_attack(target_monster, target_cell)
-			_pending_player_direction = Vector2i.ZERO
-			return
+			player_performed_attack = true
+			if not target_monster.is_alive():
+				entities.erase(target_monster)
+				current_cells.erase(target_monster)
+				reserved.erase(target_cell)
+		_pending_player_direction = Vector2i.ZERO
 	
 	# Determine actions (movement or attacks)
 	var actions := []
 	for entity in entities:
+		if entity is Monster and not entity.is_alive():
+			continue
+		if entity == _player and player_performed_attack:
+			actions.append({
+				"entity": _player,
+				"from": player_cell,
+				"to": player_cell,
+				"attack_player": false,
+				"target_cell": player_cell
+			})
+			continue
 		var from_cell: Vector2i = current_cells[entity]
 		reserved.erase(from_cell)
 		var action := _determine_entity_action(entity, from_cell, reserved, player_cell)
