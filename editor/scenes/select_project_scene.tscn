@@ -49,6 +49,11 @@ allow_reselect = true
 layout_mode = 2
 size_flags_horizontal = 3
 
+[node name="NewButton" type="Button" parent="MarginContainer/VBoxContainer/ButtonContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "New..."
+
 [node name="LoadButton" type="Button" parent="MarginContainer/VBoxContainer/ButtonContainer"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -64,6 +69,12 @@ title = "Open a File"
 file_mode = 0
 access = 2
 filters = PackedStringArray("*.json ; JSON Files")
+
+[node name="NewProjectDialog" type="FileDialog" parent="."]
+unique_name_in_owner = true
+title = "Select Project Folder"
+file_mode = 2
+access = 2
 
 [node name="NotificationDialog" type="AcceptDialog" parent="."]
 unique_name_in_owner = true
