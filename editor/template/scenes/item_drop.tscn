@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://b3x4y8k9m2n7p"]
+
+[ext_resource type="Texture2D" path="res://icon.svg" id="1_icon"]
+
+[node name="ItemDrop" type="Node2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(1, 0.8, 0.2, 1)
+texture = ExtResource("1_icon")
+region_enabled = true
+region_rect = Rect2(64, 16, 16, 16)
