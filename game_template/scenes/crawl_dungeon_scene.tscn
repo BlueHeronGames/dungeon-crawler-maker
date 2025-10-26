@@ -2,13 +2,13 @@
 
 [ext_resource type="PackedScene" uid="uid://cat3l2utyojd7" path="res://scenes/entities/player.tscn" id="1_yy4xq"]
 [ext_resource type="Script" uid="uid://degw72oi21asx" path="res://scripts/dungeon_map.gd" id="2"]
-[ext_resource type="Script" path="res://scripts/turn_manager.gd" id="3_4b4d7"]
-[ext_resource type="PackedScene" path="res://scenes/entities/monster.tscn" id="4_lhjp7"]
-[ext_resource type="Script" path="res://scripts/game_initializer.gd" id="5_lhe4m"]
-[ext_resource type="PackedScene" uid="uid://b3x4y8k9m2n7p" path="res://scenes/item_drop.tscn" id="6_itemdr"]
-[ext_resource type="Script" path="res://scripts/message_console.gd" id="7_console"]
+[ext_resource type="Script" uid="uid://c22vragpslml8" path="res://scripts/turn_manager.gd" id="3_4b4d7"]
+[ext_resource type="PackedScene" uid="uid://ba8i145fglgtq" path="res://scenes/entities/monster.tscn" id="4_lhjp7"]
+[ext_resource type="Script" uid="uid://5we4dcpkmwyp" path="res://scripts/game_initializer.gd" id="5_lhe4m"]
+[ext_resource type="PackedScene" uid="uid://b3x4y8lam2n7p" path="res://scenes/item_drop.tscn" id="6_itemdr"]
+[ext_resource type="Script" uid="uid://d30wvcf4iinex" path="res://scripts/message_console.gd" id="7_console"]
 [ext_resource type="PackedScene" uid="uid://cipjxckv47vdo" path="res://scenes/inventory_ui.tscn" id="8_inventory"]
-[ext_resource type="PackedScene" uid="uid://cpgm3rj9h3d0g" path="res://scenes/player_hud.tscn" id="9_playerhud"]
+[ext_resource type="PackedScene" path="res://scenes/player_hud.tscn" id="9_playerhud"]
 
 [node name="Node2D" type="Node2D"]
 texture_filter = 1
@@ -21,15 +21,11 @@ script = ExtResource("2")
 player_path = NodePath("../Player")
 
 [node name="Player" parent="." instance=ExtResource("1_yy4xq")]
-turn_manager_path = NodePath("../TurnManager")
 
 [node name="Monsters" type="Node" parent="."]
 
 [node name="TurnManager" type="Node" parent="."]
 script = ExtResource("3_4b4d7")
-dungeon_map_path = NodePath("../Dungeon")
-player_path = NodePath("../Player")
-monsters_container_path = NodePath("../Monsters")
 monster_scene = ExtResource("4_lhjp7")
 item_drop_scene = ExtResource("6_itemdr")
 

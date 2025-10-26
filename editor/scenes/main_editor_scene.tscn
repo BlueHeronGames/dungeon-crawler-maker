@@ -38,15 +38,15 @@ text = "Project Path:"
 [node name="ButtonRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="ExportButton" type="Button" parent="MarginContainer/VBoxContainer/ButtonRow"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Export"
-
 [node name="RunButton" type="Button" parent="MarginContainer/VBoxContainer/ButtonRow"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Run"
+
+[node name="ExportButton" type="Button" parent="MarginContainer/VBoxContainer/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Export"
 
 [node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/ButtonRow"]
 layout_mode = 2

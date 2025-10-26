@@ -38,7 +38,32 @@ func _initialize_project_context() -> void:
 func _on_export_button_pressed() -> void:
 	if !_save_game_data():
 		return
-	_show_status("Export complete! (placeholder)")
+	
+	# Show status dialog
+	status_dialog.dialog_text = "Exporting game..."
+	status_dialog.call_deferred("popup_centered")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	var prep_result := _prepare_runtime_directory()
+	if !prep_result.get("ok", false):
+		status_dialog.hide()
+		_show_error(str(prep_result.get("error", "Failed to prepare runtime directory.")))
+		return
+	var runtime_path := str(prep_result.get("path", ""))
+	if runtime_path.is_empty():
+		status_dialog.hide()
+		_show_error("Failed to determine runtime directory.")
+		return
+	
+	# Export the game
+	if !_export_game(runtime_path):
+		status_dialog.hide()
+		_show_error("Unable to export game. Ensure bin/godot.exe exists.")
+		return
+	
+	status_dialog.hide()
+	_show_status("Export complete!")
 
 func _on_run_button_pressed() -> void:
 	if !_save_game_data():
@@ -228,6 +253,48 @@ func _launch_runtime(runtime_path: String) -> bool:
 	for executable in _get_godot_executable_candidates():
 		var pid := OS.create_process(executable, args)
 		if pid > 0:
+			return true
+	return false
+
+func _export_game(runtime_path: String) -> bool:
+	# First import the project
+	if !_import_project(runtime_path):
+		push_error("Failed to import project before export")
+		return false
+	
+	# Get export path
+	var project_dir := project_data_path.get_base_dir()
+	var export_path := project_dir.path_join("export")
+	DirAccess.make_dir_recursive_absolute(export_path)
+	
+	# Determine export file name based on project
+	var project_name := project_dir.get_file()
+	if project_name.is_empty():
+		project_name = "game"
+	var export_file := export_path.path_join(project_name + ".exe")
+	
+	# Export using Godot CLI with the first preset
+	var args := PackedStringArray([
+		"--path", runtime_path,
+		"--headless",
+		"--export-release", "Windows Desktop",
+		export_file
+	])
+	
+	var candidates := _get_godot_executable_candidates()
+	if candidates.is_empty():
+		push_error("No Godot executable found")
+		return false
+	
+	for executable in candidates:
+		print("Attempting export with: ", executable)
+		print("Args: ", args)
+		var output: Array = []
+		var exit_code := OS.execute(executable, args, output, true, false)
+		print("Export exit code: ", exit_code)
+		for line in output:
+			print("  ", line)
+		if exit_code == 0:
 			return true
 	return false
 
