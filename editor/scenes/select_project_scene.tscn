@@ -76,10 +76,6 @@ title = "Select Project Folder"
 file_mode = 2
 access = 2
 
-[node name="NotificationDialog" type="AcceptDialog" parent="."]
-unique_name_in_owner = true
-title = "Project Loaded"
-
 [node name="ErrorDialog" type="AcceptDialog" parent="."]
 unique_name_in_owner = true
 title = "Unable to Load"

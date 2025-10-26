@@ -5,17 +5,15 @@ const PROJECT_SECTION := "projects"
 const PROJECT_KEY := "paths"
 const MAX_RECENT_PROJECTS := 10
 const DEFAULT_GAME_DATA_PATHS := [
-	"res://editor/data/default_game_data.json",
+	"res://data/default_game_data.json",
 	"res://game_template/game_data.json"
 ]
-const JSON_INDENT := "\t"
 
 @onready var project_list: ItemList = %ProjectList
 @onready var load_button: Button = %LoadButton
 @onready var new_button: Button = %NewButton
 @onready var file_dialog: FileDialog = %GameDataFileDialog
 @onready var new_project_dialog: FileDialog = %NewProjectDialog
-@onready var notification_dialog: AcceptDialog = %NotificationDialog
 @onready var error_dialog: AcceptDialog = %ErrorDialog
 
 var recent_projects: Array[String] = []
@@ -99,7 +97,7 @@ func _attempt_project_load(path: String) -> void:
 		return
 	_add_recent_project(path)
 	_dismiss_selection_dialogs()
-	_show_success(path)
+	_open_editor(path)
 
 func _is_valid_game_data_path(path: String) -> bool:
 	return path.get_file().to_lower() == "game_data.json"
@@ -160,10 +158,13 @@ func _load_template_game_data() -> String:
 					return contents
 	return ""
 
-func _show_success(path: String) -> void:
-	notification_dialog.title = "Project Loaded"
-	notification_dialog.dialog_text = "Congratulations! Loaded project from:\n%s" % path.get_base_dir()
-	notification_dialog.call_deferred("popup_centered")
+func _open_editor(path: String) -> void:
+	var tree := get_tree()
+	tree.set_meta("project_data_path", path)
+	var result := tree.change_scene_to_file("res://scenes/main_editor_scene.tscn")
+	if result != OK:
+		tree.set_meta("project_data_path", "")
+		_show_error("Failed to open the editor interface (code %d)." % result)
 
 func _show_error(message: String) -> void:
 	error_dialog.title = "Unable to Load"
