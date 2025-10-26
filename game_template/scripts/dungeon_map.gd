@@ -74,6 +74,7 @@ func _paint_tiles(result: Dictionary) -> void:
 
 	var floor_coords = _tile_coords_by_type.get("floor", null)
 	var wall_coords = _tile_coords_by_type.get("wall", null)
+	var filler_coords = _tile_coords_by_type.get("filler", null)
 
 	clear()
 	var height := walkable.size()
@@ -81,6 +82,7 @@ func _paint_tiles(result: Dictionary) -> void:
 	if height > 0 and walkable[0] is Array:
 		width = walkable[0].size()
 
+	# First pass: paint floor tiles
 	for y in range(height):
 		var row = walkable[y]
 		if not (row is Array):
@@ -89,6 +91,7 @@ func _paint_tiles(result: Dictionary) -> void:
 			if row[x] and floor_coords != null:
 				set_cell(0, Vector2i(x, y), _atlas_source_id, floor_coords)
 
+	# Second pass: paint walls (non-walkable cells adjacent to walkable cells)
 	if wall_coords != null:
 		for y in range(height):
 			var row = walkable[y]
@@ -99,6 +102,19 @@ func _paint_tiles(result: Dictionary) -> void:
 					continue
 				if _has_adjacent_walkable(walkable, x, y):
 					set_cell(0, Vector2i(x, y), _atlas_source_id, wall_coords)
+
+	# Third pass: fill remaining empty space with filler tiles
+	if filler_coords != null:
+		for y in range(height):
+			var row = walkable[y]
+			if not (row is Array):
+				continue
+			for x in range(width):
+				if row[x]:
+					continue
+				if not _has_adjacent_walkable(walkable, x, y):
+					set_cell(0, Vector2i(x, y), _atlas_source_id, filler_coords)
+
 
 
 func _has_adjacent_walkable(grid: Array, x: int, y: int) -> bool:
