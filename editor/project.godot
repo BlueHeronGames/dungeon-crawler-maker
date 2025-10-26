@@ -11,6 +11,7 @@ config_version=5
 [application]
 
 config/name="Dungeon Crawler Creator"
+run/main_scene="uid://csex0legi6x5e"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
 
