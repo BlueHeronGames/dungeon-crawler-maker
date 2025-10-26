@@ -70,12 +70,15 @@ func _on_file_dialog_file_selected(path: String) -> void:
 
 func _attempt_project_load(path: String) -> void:
 	if !_is_valid_game_data_path(path):
+		_dismiss_file_dialog()
 		_show_error("Please select a valid game_data.json file.")
 		return
 	if !FileAccess.file_exists(path):
+		_dismiss_file_dialog()
 		_show_error("Selected file could not be found.")
 		return
 	_add_recent_project(path)
+	_dismiss_file_dialog()
 	_show_success(path)
 
 func _is_valid_game_data_path(path: String) -> bool:
@@ -97,12 +100,16 @@ func _save_recent_projects() -> void:
 	if err != OK:
 		push_warning("Failed to save recent projects: %s" % err)
 
+func _dismiss_file_dialog() -> void:
+	if file_dialog.visible:
+		file_dialog.hide()
+
 func _show_success(path: String) -> void:
 	notification_dialog.title = "Project Loaded"
 	notification_dialog.dialog_text = "Congratulations! Loaded project from:\n%s" % path.get_base_dir()
-	notification_dialog.popup_centered()
+	notification_dialog.call_deferred("popup_centered")
 
 func _show_error(message: String) -> void:
 	error_dialog.title = "Unable to Load"
 	error_dialog.dialog_text = message
-	error_dialog.popup_centered()
+	error_dialog.call_deferred("popup_centered")
