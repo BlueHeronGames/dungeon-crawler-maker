@@ -238,6 +238,17 @@ func _copy_file(source: String, destination: String) -> int:
 	return OK
 
 func _import_project(runtime_path: String) -> bool:
+	# Skip import if .godot folder already exists and is recent
+	var godot_dir := runtime_path.path_join(".godot")
+	var project_godot := runtime_path.path_join("project.godot")
+	
+	if DirAccess.dir_exists_absolute(godot_dir) and FileAccess.file_exists(project_godot):
+		var godot_time := FileAccess.get_modified_time(godot_dir.path_join("uid_cache.bin"))
+		var project_time := FileAccess.get_modified_time(project_godot)
+		# If .godot folder is newer than project.godot, skip import
+		if godot_time > 0 and godot_time >= project_time:
+			return true
+	
 	# Run Godot with --headless --import --quit to import the project without opening a window
 	var args := PackedStringArray(["--path", runtime_path, "--headless", "--import", "--quit"])
 	for executable in _get_godot_executable_candidates():
