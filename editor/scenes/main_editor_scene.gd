@@ -7,6 +7,10 @@ extends Control
 @onready var error_dialog: AcceptDialog = %ErrorDialog
 @onready var file_menu_button: MenuButton = %FileMenu
 @onready var properties_dialog: AcceptDialog = %PropertiesDialog
+@onready var properties_sidebar: VBoxContainer = %PropertiesSidebar
+@onready var project_button: Button = %ProjectButton
+@onready var visuals_button: Button = %VisualsButton
+@onready var gameplay_button: Button = %GameplayButton
 @onready var properties_tabs: TabContainer = %PropertiesTabs
 @onready var project_panel: Control = %ProjectPanel
 @onready var project_title_field: LineEdit = %ProjectTitleField
@@ -44,6 +48,7 @@ func _ready() -> void:
 	visuals_zoom_field.value_changed.connect(_on_visuals_zoom_changed)
 	gameplay_can_pass_turn_field.toggled.connect(_on_gameplay_can_pass_turn_toggled)
 	properties_dialog.ok_button_text = "Save"
+	_initialize_properties_sidebar()
 	_initialize_project_context()
 
 func _initialize_project_context() -> void:
@@ -376,7 +381,37 @@ func _focus_properties_tab(panel: Control) -> void:
 		return
 	var tab_index := properties_tabs.get_tab_idx_from_control(panel)
 	if tab_index >= 0:
-		properties_tabs.current_tab = tab_index
+		_sync_properties_tab_selection(tab_index)
+
+func _initialize_properties_sidebar() -> void:
+	if properties_tabs == null or properties_sidebar == null:
+		return
+	properties_tabs.tabs_visible = false
+	var buttons : Array[Button] = [project_button, visuals_button, gameplay_button]
+	for index in range(buttons.size()):
+		var button := buttons[index]
+		if button == null:
+			continue
+		button.pressed.connect(_on_properties_button_pressed.bind(index))
+		button.button_pressed = (index == properties_tabs.current_tab)
+	_sync_properties_tab_selection(properties_tabs.current_tab)
+
+func _on_properties_button_pressed(tab: int) -> void:
+	_sync_properties_tab_selection(tab)
+
+func _sync_properties_tab_selection(tab: int) -> void:
+	if properties_tabs == null:
+		return
+	properties_tabs.current_tab = tab
+	var matrix := {
+		0: project_button,
+		1: visuals_button,
+		2: gameplay_button
+	}
+	for key in matrix.keys():
+		var button: Button = matrix[key]
+		if button != null:
+			button.button_pressed = (key == tab)
 
 func _refresh_properties_ui() -> void:
 	var project := _ensure_project_dictionary()

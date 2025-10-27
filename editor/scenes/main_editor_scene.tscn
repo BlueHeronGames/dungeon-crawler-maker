@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://f2x0tj211s32"]
+[gd_scene load_steps=3 format=3 uid="uid://f2x0tj211s32"]
 
-[ext_resource type="Script" path="res://scenes/main_editor_scene.gd" id="1"]
+[ext_resource type="Script" uid="uid://cfo5441v6metu" path="res://scenes/main_editor_scene.gd" id="1"]
+
+[sub_resource type="ButtonGroup" id="1"]
 
 [node name="MainEditorRoot" type="Control"]
 layout_mode = 3
@@ -81,9 +83,9 @@ offset_left = -120.0
 offset_top = -10.0
 offset_right = 120.0
 offset_bottom = 10.0
+text = "Select an editor tool to get started."
 horizontal_alignment = 1
 vertical_alignment = 1
-text = "Select an editor tool to get started."
 
 [node name="StatusDialog" type="AcceptDialog" parent="."]
 unique_name_in_owner = true
@@ -97,22 +99,52 @@ title = "Error"
 unique_name_in_owner = true
 title = "Properties"
 size = Vector2i(640, 400)
-resizable = true
 
 [node name="Content" type="HBoxContainer" parent="PropertiesDialog"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="PropertiesSidebar" type="VBoxContainer" parent="PropertiesDialog/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="ProjectButton" type="Button" parent="PropertiesDialog/Content/PropertiesSidebar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_group = SubResource("1")
+text = "Project"
+
+[node name="VisualsButton" type="Button" parent="PropertiesDialog/Content/PropertiesSidebar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_group = SubResource("1")
+text = "Visuals"
+
+[node name="GameplayButton" type="Button" parent="PropertiesDialog/Content/PropertiesSidebar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_group = SubResource("1")
+text = "Gameplay"
 
 [node name="PropertiesTabs" type="TabContainer" parent="PropertiesDialog/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-tab_alignment = 0
-tab_position = 2
+current_tab = 0
+tabs_visible = false
 
 [node name="ProjectPanel" type="VBoxContainer" parent="PropertiesDialog/Content/PropertiesTabs"]
 unique_name_in_owner = true
@@ -120,7 +152,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 8
-tab_title = "Project"
+metadata/_tab_index = 0
 
 [node name="ProjectTitleLabel" type="Label" parent="PropertiesDialog/Content/PropertiesTabs/ProjectPanel"]
 layout_mode = 2
@@ -152,10 +184,10 @@ text = "Description"
 
 [node name="ProjectDescriptionField" type="TextEdit" parent="PropertiesDialog/Content/PropertiesTabs/ProjectPanel"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-custom_minimum_size = Vector2(0, 160)
 wrap_mode = 1
 
 [node name="ProjectPanelSpacer" type="Control" parent="PropertiesDialog/Content/PropertiesTabs/ProjectPanel"]
@@ -164,11 +196,12 @@ size_flags_vertical = 3
 
 [node name="VisualsPanel" type="VBoxContainer" parent="PropertiesDialog/Content/PropertiesTabs"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 8
-tab_title = "Visuals"
+metadata/_tab_index = 1
 
 [node name="VisualsZoomLabel" type="Label" parent="PropertiesDialog/Content/PropertiesTabs/VisualsPanel"]
 layout_mode = 2
@@ -177,7 +210,6 @@ text = "Zoom"
 [node name="VisualsZoomField" type="SpinBox" parent="PropertiesDialog/Content/PropertiesTabs/VisualsPanel"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 1
 min_value = 0.25
 max_value = 8.0
 step = 0.25
@@ -189,11 +221,12 @@ size_flags_vertical = 3
 
 [node name="GameplayPanel" type="VBoxContainer" parent="PropertiesDialog/Content/PropertiesTabs"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 8
-tab_title = "Gameplay"
+metadata/_tab_index = 2
 
 [node name="GameplayCanPassTurnLabel" type="Label" parent="PropertiesDialog/Content/PropertiesTabs/GameplayPanel"]
 layout_mode = 2
