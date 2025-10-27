@@ -53,15 +53,21 @@ func get_room_requests() -> Array:
 		return rooms
 	return []
 
-func get_metadata(default_value: Dictionary = {}) -> Dictionary:
-	var metadata:Variant = data.get("metadata", default_value)
-	if metadata is Dictionary:
-		return metadata
+func get_project(default_value: Dictionary = {}) -> Dictionary:
+	var project: Variant = data.get("project", default_value)
+	if project is Dictionary:
+		return project
 	return default_value
 
+func get_project_value(key: String, default_value: String = "") -> String:
+	var project := get_project()
+	return str(project.get(key, default_value))
+
+func get_metadata(default_value: Dictionary = {}) -> Dictionary:
+	return get_project(default_value)
+
 func get_metadata_value(key: String, default_value: String = "") -> String:
-	var metadata := get_metadata()
-	return str(metadata.get(key, default_value))
+	return get_project_value(key, default_value)
 
 func get_item_definitions() -> Dictionary:
 	var items:Variant = data.get("items", {})

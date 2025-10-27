@@ -25,6 +25,19 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
+[node name="MenuRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="FileMenu" type="MenuButton" parent="MarginContainer/VBoxContainer/MenuRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "File"
+
+[node name="MenuSpacer" type="Control" parent="MarginContainer/VBoxContainer/MenuRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
 [node name="Title" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = "Dungeon Crawler Editor"
@@ -52,13 +65,25 @@ text = "Export"
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="GameDataEditor" type="TextEdit" parent="MarginContainer/VBoxContainer"]
+[node name="EditorViewport" type="Panel" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-syntax_highlighting = true
-wrap_mode = 1
+
+[node name="ViewportLabel" type="Label" parent="MarginContainer/VBoxContainer/EditorViewport"]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -10.0
+offset_right = 120.0
+offset_bottom = 10.0
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "Select an editor tool to get started."
 
 [node name="StatusDialog" type="AcceptDialog" parent="."]
 unique_name_in_owner = true
@@ -67,3 +92,81 @@ title = "Export"
 [node name="ErrorDialog" type="AcceptDialog" parent="."]
 unique_name_in_owner = true
 title = "Error"
+
+[node name="PropertiesDialog" type="AcceptDialog" parent="."]
+unique_name_in_owner = true
+title = "Properties"
+size = Vector2i(640, 400)
+resizable = true
+
+[node name="Content" type="HBoxContainer" parent="PropertiesDialog"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="PropertiesCategoryList" type="ItemList" parent="PropertiesDialog/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 1
+size_flags_vertical = 3
+custom_minimum_size = Vector2(180, 0)
+item_count = 1
+item_0/text = "Project"
+item_0/id = 0
+item_0/metadata = "project"
+
+[node name="PropertiesStack" type="VBoxContainer" parent="PropertiesDialog/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ProjectPanel" type="VBoxContainer" parent="PropertiesDialog/Content/PropertiesStack"]
+unique_name_in_owner = true
+layout_mode = 2
+visible = true
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="ProjectTitleLabel" type="Label" parent="PropertiesDialog/Content/PropertiesStack/ProjectPanel"]
+layout_mode = 2
+text = "Title"
+
+[node name="ProjectTitleField" type="LineEdit" parent="PropertiesDialog/Content/PropertiesStack/ProjectPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ProjectAuthorLabel" type="Label" parent="PropertiesDialog/Content/PropertiesStack/ProjectPanel"]
+layout_mode = 2
+text = "Author"
+
+[node name="ProjectAuthorField" type="LineEdit" parent="PropertiesDialog/Content/PropertiesStack/ProjectPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ProjectVersionLabel" type="Label" parent="PropertiesDialog/Content/PropertiesStack/ProjectPanel"]
+layout_mode = 2
+text = "Version"
+
+[node name="ProjectVersionField" type="LineEdit" parent="PropertiesDialog/Content/PropertiesStack/ProjectPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ProjectDescriptionLabel" type="Label" parent="PropertiesDialog/Content/PropertiesStack/ProjectPanel"]
+layout_mode = 2
+text = "Description"
+
+[node name="ProjectDescriptionField" type="TextEdit" parent="PropertiesDialog/Content/PropertiesStack/ProjectPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0, 160)
+wrap_mode = 1
+
+[node name="ProjectPanelSpacer" type="Control" parent="PropertiesDialog/Content/PropertiesStack/ProjectPanel"]
+layout_mode = 2
+size_flags_vertical = 3

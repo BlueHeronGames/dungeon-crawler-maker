@@ -141,9 +141,10 @@ dcm/
 ```json
 {
   "version": "1.0",
-  "metadata": {
+   "project": {
     "title": "My Roguelike",
     "author": "Creator Name",
+      "version": "1.0",
     "description": "Game description"
   },
   "config": {

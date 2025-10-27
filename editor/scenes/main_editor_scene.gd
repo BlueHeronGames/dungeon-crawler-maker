@@ -3,17 +3,45 @@ extends Control
 @onready var export_button: Button = %ExportButton
 @onready var run_button: Button = %RunButton
 @onready var project_path_label: Label = %ProjectPathLabel
-@onready var game_data_editor: TextEdit = %GameDataEditor
 @onready var status_dialog: AcceptDialog = %StatusDialog
 @onready var error_dialog: AcceptDialog = %ErrorDialog
+@onready var file_menu_button: MenuButton = %FileMenu
+@onready var properties_dialog: AcceptDialog = %PropertiesDialog
+@onready var properties_category_list: ItemList = %PropertiesCategoryList
+@onready var project_panel: Control = %ProjectPanel
+@onready var project_title_field: LineEdit = %ProjectTitleField
+@onready var project_author_field: LineEdit = %ProjectAuthorField
+@onready var project_version_field: LineEdit = %ProjectVersionField
+@onready var project_description_field: TextEdit = %ProjectDescriptionField
 
 var project_data_path := ""
 var _return_to_picker_on_error := false
+var _game_data: Dictionary = {}
+var _properties_panels: Dictionary = {}
+var _is_dirty := false
+var _syncing_properties := false
+
+const FILE_MENU_PROPERTIES_ID := 0
+const PROJECT_FIELDS := ["title", "author", "version", "description"]
 
 func _ready() -> void:
 	export_button.pressed.connect(_on_export_button_pressed)
 	run_button.pressed.connect(_on_run_button_pressed)
 	error_dialog.confirmed.connect(_on_error_dialog_confirmed)
+	var file_popup: PopupMenu = file_menu_button.get_popup()
+	file_popup.clear()
+	file_popup.add_item("Properties", FILE_MENU_PROPERTIES_ID)
+	file_popup.id_pressed.connect(_on_file_menu_id_pressed)
+	properties_dialog.confirmed.connect(_on_properties_dialog_confirmed)
+	properties_category_list.item_selected.connect(_on_properties_category_selected)
+	project_title_field.text_changed.connect(_on_project_field_changed)
+	project_author_field.text_changed.connect(_on_project_field_changed)
+	project_version_field.text_changed.connect(_on_project_field_changed)
+	project_description_field.text_changed.connect(_on_project_description_changed)
+	properties_dialog.ok_button_text = "Save"
+	_properties_panels = {
+		"project": project_panel
+	}
 	_initialize_project_context()
 
 func _initialize_project_context() -> void:
@@ -32,8 +60,12 @@ func _initialize_project_context() -> void:
 	if file == null:
 		_show_error("Unable to open game_data.json for reading.", true)
 		return
-	game_data_editor.text = file.get_as_text()
+	var raw_text := file.get_as_text()
 	file.close()
+	if !_load_game_data(raw_text):
+		return
+	_refresh_properties_ui()
+	_select_properties_panel("project")
 
 func _on_export_button_pressed() -> void:
 	if !_save_game_data():
@@ -93,18 +125,20 @@ func _on_run_button_pressed() -> void:
 	status_dialog.hide()
 
 func _save_game_data() -> bool:
-	var raw_text := game_data_editor.text
-	var json := JSON.new()
-	var parse_error := json.parse(raw_text)
-	if parse_error != OK:
-		_show_error("Invalid JSON at line %d: %s" % [json.get_error_line(), json.get_error_message()])
+	if _game_data.is_empty():
+		_show_error("No game data is loaded.")
 		return false
+	_update_project_from_ui()
 	var file := FileAccess.open(project_data_path, FileAccess.WRITE)
 	if file == null:
 		_show_error("Unable to save game_data.json for export.")
 		return false
-	file.store_string(raw_text)
+	var json_text := JSON.stringify(_game_data, "\t")
+	if !json_text.ends_with("\n"):
+		json_text += "\n"
+	file.store_string(json_text)
 	file.close()
+	_is_dirty = false
 	return true
 
 func _show_status(message: String) -> void:
@@ -321,3 +355,100 @@ func _get_godot_executable_candidates() -> Array[String]:
 		if path != "" and FileAccess.file_exists(path):
 			candidates.append(path)
 	return candidates
+
+func _on_file_menu_id_pressed(id: int) -> void:
+	match id:
+		FILE_MENU_PROPERTIES_ID:
+			_open_properties_dialog()
+
+
+func _open_properties_dialog() -> void:
+	_refresh_properties_ui()
+	_select_properties_panel("project")
+	properties_dialog.call_deferred("popup_centered")
+
+func _on_properties_category_selected(index: int) -> void:
+	var metadata: Variant = properties_category_list.get_item_metadata(index)
+	if metadata is String:
+		_select_properties_panel((metadata as String).to_lower())
+
+func _select_properties_panel(key: String) -> void:
+	if properties_category_list.item_count > 0:
+		for i in range(properties_category_list.item_count):
+			var meta: Variant = properties_category_list.get_item_metadata(i)
+			if meta is String and (meta as String).to_lower() == key:
+				properties_category_list.select(i, true)
+				break
+	for name in _properties_panels.keys():
+		var panel: Control = _properties_panels[name]
+		panel.visible = (name == key)
+
+func _refresh_properties_ui() -> void:
+	var project := _ensure_project_dictionary()
+	_syncing_properties = true
+	project_title_field.text = str(project.get("title", ""))
+	project_author_field.text = str(project.get("author", ""))
+	project_version_field.text = str(project.get("version", ""))
+	project_description_field.text = str(project.get("description", ""))
+	_syncing_properties = false
+	
+func _on_properties_dialog_confirmed() -> void:
+	if !_save_game_data():
+		_refresh_properties_ui()
+		properties_dialog.call_deferred("popup_centered")
+
+func _on_project_field_changed(_new_text: String) -> void:
+	if _syncing_properties:
+		return
+	_mark_dirty()
+
+func _on_project_description_changed() -> void:
+	if _syncing_properties:
+		return
+	_mark_dirty()
+
+func _mark_dirty() -> void:
+	_is_dirty = true
+
+func _load_game_data(raw_text: String) -> bool:
+	var json := JSON.new()
+	var parse_error := json.parse(raw_text)
+	if parse_error != OK:
+		_show_error("Invalid JSON at line %d: %s" % [json.get_error_line(), json.get_error_message()], true)
+		return false
+	var parsed : Variant = json.get_data()
+	if parsed is Dictionary:
+		_game_data = parsed
+		_migrate_game_data()
+		return true
+	_show_error("game_data.json must contain a JSON object at the root.", true)
+	return false
+
+func _migrate_game_data() -> void:
+	var had_metadata := _game_data.has("metadata")
+	if had_metadata and !_game_data.has("project"):
+		var legacy : Variant = _game_data.get("metadata")
+		if legacy is Dictionary:
+			_game_data["project"] = (legacy as Dictionary).duplicate(true)
+		else:
+			_game_data["project"] = {}
+	if had_metadata:
+		_game_data.erase("metadata")
+	_ensure_project_dictionary()
+
+func _ensure_project_dictionary() -> Dictionary:
+	var project : Variant = _game_data.get("project")
+	if !(project is Dictionary):
+		project = {}
+		_game_data["project"] = project
+	for field in PROJECT_FIELDS:
+		if !project.has(field):
+			project[field] = ""
+	return project
+
+func _update_project_from_ui() -> void:
+	var project := _ensure_project_dictionary()
+	project["title"] = project_title_field.text
+	project["author"] = project_author_field.text
+	project["version"] = project_version_field.text
+	project["description"] = project_description_field.text

@@ -12,8 +12,8 @@ func _ready() -> void:
 	call_deferred("_setup_player_hud")
 
 func _apply_window_title() -> void:
-	var title := _config.get_metadata_value("title", "Dungeon Crawler")
-	var version := _config.get_metadata_value("version", "").strip_edges()
+	var title := _config.get_project_value("title", "Dungeon Crawler")
+	var version := _config.get_project_value("version", "").strip_edges()
 	var window_title := title
 	if not version.is_empty():
 		window_title = "%s v%s" % [title, version]
