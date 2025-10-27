@@ -30,16 +30,26 @@ func _load(path: String) -> void:
 		data = {}
 
 func get_zoom(default_value: float = 1.0) -> float:
-	var config_section:Variant = data.get("config", {})
-	return float(config_section.get("zoom", default_value))
+	var visuals := get_visuals()
+	if visuals.has("zoom"):
+		return float(visuals.get("zoom", default_value))
+	var legacy_config: Variant = data.get("config", {})
+	if legacy_config is Dictionary:
+		return float((legacy_config as Dictionary).get("zoom", default_value))
+	return default_value
 
 func get_tile_size(default_value: int = 32) -> int:
 	var tileset := get_primary_tileset()
 	return int(tileset.get("tile_size", default_value))
 
 func get_can_pass_turn(default_value: bool = false) -> bool:
-	var config_section:Variant = data.get("config", {})
-	return bool(config_section.get("can_pass_turn", default_value))
+	var gameplay := get_gameplay()
+	if gameplay.has("can_pass_turn"):
+		return bool(gameplay.get("can_pass_turn", default_value))
+	var legacy_config: Variant = data.get("config", {})
+	if legacy_config is Dictionary:
+		return bool((legacy_config as Dictionary).get("can_pass_turn", default_value))
+	return default_value
 
 func get_primary_tileset() -> Dictionary:
 	var tilesets:Variant = data.get("tilesets", [])
@@ -68,6 +78,18 @@ func get_metadata(default_value: Dictionary = {}) -> Dictionary:
 
 func get_metadata_value(key: String, default_value: String = "") -> String:
 	return get_project_value(key, default_value)
+
+func get_visuals(default_value: Dictionary = {}) -> Dictionary:
+	var visuals: Variant = data.get("visuals", null)
+	if visuals is Dictionary:
+		return visuals
+	return default_value
+
+func get_gameplay(default_value: Dictionary = {}) -> Dictionary:
+	var gameplay: Variant = data.get("gameplay", null)
+	if gameplay is Dictionary:
+		return gameplay
+	return default_value
 
 func get_item_definitions() -> Dictionary:
 	var items:Variant = data.get("items", {})

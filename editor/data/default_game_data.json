@@ -6,9 +6,11 @@
 		"version": "1.0.0",
 		"description": "You upset the Demon King, and he sent his cronies to wipe out your villagers. Journey thorough ruined villages, haunted forests, thundering plains, and finally the Demon King's castle to slay him and vindicate your dead villagers."
 	},
-	"config": {
-		"can_pass_turn": true,
+	"visuals": {
 		"zoom": 2
+	},
+	"gameplay": {
+		"can_pass_turn": true
 	},
 	"tilesets": [
 		{

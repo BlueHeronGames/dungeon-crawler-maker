@@ -141,7 +141,7 @@ The coordinates would be:
       }
     }
   ],
-  "config": {
+  "visuals": {
     "zoom": 2.0
   }
 }

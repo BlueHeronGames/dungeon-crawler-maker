@@ -7,17 +7,20 @@ extends Control
 @onready var error_dialog: AcceptDialog = %ErrorDialog
 @onready var file_menu_button: MenuButton = %FileMenu
 @onready var properties_dialog: AcceptDialog = %PropertiesDialog
-@onready var properties_category_list: ItemList = %PropertiesCategoryList
+@onready var properties_tabs: TabContainer = %PropertiesTabs
 @onready var project_panel: Control = %ProjectPanel
 @onready var project_title_field: LineEdit = %ProjectTitleField
 @onready var project_author_field: LineEdit = %ProjectAuthorField
 @onready var project_version_field: LineEdit = %ProjectVersionField
 @onready var project_description_field: TextEdit = %ProjectDescriptionField
+@onready var visuals_panel: Control = %VisualsPanel
+@onready var visuals_zoom_field: SpinBox = %VisualsZoomField
+@onready var gameplay_panel: Control = %GameplayPanel
+@onready var gameplay_can_pass_turn_field: CheckBox = %GameplayCanPassTurnField
 
 var project_data_path := ""
 var _return_to_picker_on_error := false
 var _game_data: Dictionary = {}
-var _properties_panels: Dictionary = {}
 var _is_dirty := false
 var _syncing_properties := false
 
@@ -33,15 +36,14 @@ func _ready() -> void:
 	file_popup.add_item("Properties", FILE_MENU_PROPERTIES_ID)
 	file_popup.id_pressed.connect(_on_file_menu_id_pressed)
 	properties_dialog.confirmed.connect(_on_properties_dialog_confirmed)
-	properties_category_list.item_selected.connect(_on_properties_category_selected)
+	properties_dialog.canceled.connect(_on_properties_dialog_canceled)
 	project_title_field.text_changed.connect(_on_project_field_changed)
 	project_author_field.text_changed.connect(_on_project_field_changed)
 	project_version_field.text_changed.connect(_on_project_field_changed)
 	project_description_field.text_changed.connect(_on_project_description_changed)
+	visuals_zoom_field.value_changed.connect(_on_visuals_zoom_changed)
+	gameplay_can_pass_turn_field.toggled.connect(_on_gameplay_can_pass_turn_toggled)
 	properties_dialog.ok_button_text = "Save"
-	_properties_panels = {
-		"project": project_panel
-	}
 	_initialize_project_context()
 
 func _initialize_project_context() -> void:
@@ -65,7 +67,7 @@ func _initialize_project_context() -> void:
 	if !_load_game_data(raw_text):
 		return
 	_refresh_properties_ui()
-	_select_properties_panel("project")
+	_focus_properties_tab(project_panel)
 
 func _on_export_button_pressed() -> void:
 	if !_save_game_data():
@@ -129,6 +131,8 @@ func _save_game_data() -> bool:
 		_show_error("No game data is loaded.")
 		return false
 	_update_project_from_ui()
+	_update_visuals_from_ui()
+	_update_gameplay_from_ui()
 	var file := FileAccess.open(project_data_path, FileAccess.WRITE)
 	if file == null:
 		_show_error("Unable to save game_data.json for export.")
@@ -364,38 +368,37 @@ func _on_file_menu_id_pressed(id: int) -> void:
 
 func _open_properties_dialog() -> void:
 	_refresh_properties_ui()
-	_select_properties_panel("project")
+	_focus_properties_tab(project_panel)
 	properties_dialog.call_deferred("popup_centered")
 
-func _on_properties_category_selected(index: int) -> void:
-	var metadata: Variant = properties_category_list.get_item_metadata(index)
-	if metadata is String:
-		_select_properties_panel((metadata as String).to_lower())
-
-func _select_properties_panel(key: String) -> void:
-	if properties_category_list.item_count > 0:
-		for i in range(properties_category_list.item_count):
-			var meta: Variant = properties_category_list.get_item_metadata(i)
-			if meta is String and (meta as String).to_lower() == key:
-				properties_category_list.select(i, true)
-				break
-	for name in _properties_panels.keys():
-		var panel: Control = _properties_panels[name]
-		panel.visible = (name == key)
+func _focus_properties_tab(panel: Control) -> void:
+	if properties_tabs == null or panel == null:
+		return
+	var tab_index := properties_tabs.get_tab_idx_from_control(panel)
+	if tab_index >= 0:
+		properties_tabs.current_tab = tab_index
 
 func _refresh_properties_ui() -> void:
 	var project := _ensure_project_dictionary()
+	var visuals := _ensure_visuals_dictionary()
+	var gameplay := _ensure_gameplay_dictionary()
 	_syncing_properties = true
 	project_title_field.text = str(project.get("title", ""))
 	project_author_field.text = str(project.get("author", ""))
 	project_version_field.text = str(project.get("version", ""))
 	project_description_field.text = str(project.get("description", ""))
+	visuals_zoom_field.value = float(visuals.get("zoom", 1.0))
+	gameplay_can_pass_turn_field.button_pressed = bool(gameplay.get("can_pass_turn", false))
 	_syncing_properties = false
+	_is_dirty = false
 	
 func _on_properties_dialog_confirmed() -> void:
 	if !_save_game_data():
 		_refresh_properties_ui()
 		properties_dialog.call_deferred("popup_centered")
+
+func _on_properties_dialog_canceled() -> void:
+	_refresh_properties_ui()
 
 func _on_project_field_changed(_new_text: String) -> void:
 	if _syncing_properties:
@@ -434,7 +437,19 @@ func _migrate_game_data() -> void:
 			_game_data["project"] = {}
 	if had_metadata:
 		_game_data.erase("metadata")
+	if _game_data.has("config"):
+		var config : Variant = _game_data.get("config")
+		if config is Dictionary:
+			var visuals := _ensure_visuals_dictionary()
+			if config.has("zoom"):
+				visuals["zoom"] = config.get("zoom")
+			var gameplay := _ensure_gameplay_dictionary()
+			if config.has("can_pass_turn"):
+				gameplay["can_pass_turn"] = config.get("can_pass_turn")
+		_game_data.erase("config")
 	_ensure_project_dictionary()
+	_ensure_visuals_dictionary()
+	_ensure_gameplay_dictionary()
 
 func _ensure_project_dictionary() -> Dictionary:
 	var project : Variant = _game_data.get("project")
@@ -446,9 +461,45 @@ func _ensure_project_dictionary() -> Dictionary:
 			project[field] = ""
 	return project
 
+func _ensure_visuals_dictionary() -> Dictionary:
+	var visuals : Variant = _game_data.get("visuals")
+	if !(visuals is Dictionary):
+		visuals = {}
+		_game_data["visuals"] = visuals
+	if !visuals.has("zoom"):
+		visuals["zoom"] = 1.0
+	return visuals
+
+func _ensure_gameplay_dictionary() -> Dictionary:
+	var gameplay : Variant = _game_data.get("gameplay")
+	if !(gameplay is Dictionary):
+		gameplay = {}
+		_game_data["gameplay"] = gameplay
+	if !gameplay.has("can_pass_turn"):
+		gameplay["can_pass_turn"] = false
+	return gameplay
+
 func _update_project_from_ui() -> void:
 	var project := _ensure_project_dictionary()
 	project["title"] = project_title_field.text
 	project["author"] = project_author_field.text
 	project["version"] = project_version_field.text
 	project["description"] = project_description_field.text
+
+func _update_visuals_from_ui() -> void:
+	var visuals := _ensure_visuals_dictionary()
+	visuals["zoom"] = visuals_zoom_field.value
+
+func _update_gameplay_from_ui() -> void:
+	var gameplay := _ensure_gameplay_dictionary()
+	gameplay["can_pass_turn"] = gameplay_can_pass_turn_field.button_pressed
+
+func _on_visuals_zoom_changed(_value: float) -> void:
+	if _syncing_properties:
+		return
+	_mark_dirty()
+
+func _on_gameplay_can_pass_turn_toggled(_pressed: bool) -> void:
+	if _syncing_properties:
+		return
+	_mark_dirty()

@@ -147,11 +147,12 @@ dcm/
       "version": "1.0",
     "description": "Game description"
   },
-  "config": {
-    "starting_class": "warrior",
-    "difficulty": "normal",
-    "permadeath": true
-  },
+      "visuals": {
+         "zoom": 2.0
+      },
+      "gameplay": {
+         "can_pass_turn": true
+      },
   "tilesets": [
     {
       "id": "dungeon_basic",
