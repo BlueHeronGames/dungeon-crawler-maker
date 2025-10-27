@@ -138,6 +138,14 @@ toggle_mode = true
 button_group = SubResource("1")
 text = "Gameplay"
 
+[node name="TilesetsButton" type="Button" parent="PropertiesDialog/Content/PropertiesSidebar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_group = SubResource("1")
+text = "Tilesets"
+
 [node name="PropertiesTabs" type="TabContainer" parent="PropertiesDialog/Content"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -240,3 +248,139 @@ text = "Allow player to skip a turn"
 [node name="GameplayPanelSpacer" type="Control" parent="PropertiesDialog/Content/PropertiesTabs/GameplayPanel"]
 layout_mode = 2
 size_flags_vertical = 3
+
+[node name="TilesetsPanel" type="HBoxContainer" parent="PropertiesDialog/Content/PropertiesTabs"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+metadata/_tab_index = 3
+
+[node name="TilesetListColumn" type="VBoxContainer" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(220, 0)
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="TilesetListHeader" type="HBoxContainer" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetListColumn"]
+layout_mode = 2
+
+[node name="TilesetListLabel" type="Label" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetListColumn/TilesetListHeader"]
+layout_mode = 2
+text = "Tilesets"
+
+[node name="TilesetListHeaderSpacer" type="Control" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetListColumn/TilesetListHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TilesetAddButton" type="Button" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetListColumn/TilesetListHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "+"
+tooltip_text = "Add tileset"
+
+[node name="TilesetRemoveButton" type="Button" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetListColumn/TilesetListHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "-"
+tooltip_text = "Remove selected tileset"
+
+[node name="TilesetListScroll" type="ScrollContainer" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetListColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TilesetList" type="VBoxContainer" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetListColumn/TilesetListScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 4
+
+[node name="TilesetDetail" type="VBoxContainer" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="TilesetEmptyLabel" type="Label" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetDetail"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Select or add a tileset to edit its settings."
+
+[node name="TilesetForm" type="VBoxContainer" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetDetail"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="TilesetIdLabel" type="Label" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetDetail/TilesetForm"]
+layout_mode = 2
+text = "ID"
+
+[node name="TilesetIdField" type="LineEdit" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetDetail/TilesetForm"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="TilesetPathLabel" type="Label" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetDetail/TilesetForm"]
+layout_mode = 2
+text = "Image Path"
+
+[node name="TilesetPathRow" type="HBoxContainer" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetDetail/TilesetForm"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TilesetPathField" type="LineEdit" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetDetail/TilesetForm/TilesetPathRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TilesetBrowseButton" type="Button" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetDetail/TilesetForm/TilesetPathRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Browse"
+
+[node name="TilesetTileSizeLabel" type="Label" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetDetail/TilesetForm"]
+layout_mode = 2
+text = "Tile Size"
+
+[node name="TilesetTileSizeField" type="SpinBox" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetDetail/TilesetForm"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 512.0
+step = 1.0
+value = 32.0
+
+[node name="TilesetTilesLabel" type="Label" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetDetail/TilesetForm"]
+layout_mode = 2
+text = "Tiles"
+
+[node name="TilesetTilesList" type="ItemList" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetDetail/TilesetForm"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="TilesetTilesHint" type="Label" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetDetail/TilesetForm"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Detailed tile editing coming soon."
+
+[node name="TilesetDetailSpacer" type="Control" parent="PropertiesDialog/Content/PropertiesTabs/TilesetsPanel/TilesetDetail/TilesetForm"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TilesetPathDialog" type="FileDialog" parent="."]
+unique_name_in_owner = true
+title = "Select Tileset Image"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.png", "*.webp", "*.jpg", "*.jpeg", "*.*")
+mode_overrides_title = false
